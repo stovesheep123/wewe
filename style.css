@@ -2010,3 +2010,162 @@ label,
     padding: 18px 14px 22px;
   }
 }
+/* ============================================================
+   スマホ：ログイン・新規登録を確実にスクロール可能にする
+   ============================================================ */
+
+@media (max-width: 640px) {
+
+  html,
+  body {
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    overflow: hidden !important;
+  }
+
+  /* 認証画面を「画面全体のスクロール領域」にする */
+  #authScreen.auth-screen {
+    position: fixed;
+    inset: 0;
+
+    width: 100%;
+    height: 100dvh;
+    min-height: 100dvh;
+
+    display: flex;
+    flex-direction: column;
+
+    /* 中央寄せをやめる */
+    justify-content: flex-start;
+    align-items: center;
+
+    /* ★ここが重要 */
+    overflow-y: scroll !important;
+    overflow-x: hidden !important;
+
+    -webkit-overflow-scrolling: touch;
+
+    padding-top: max(30px, env(safe-area-inset-top));
+    padding-right: 16px;
+    padding-bottom: max(60px, env(safe-area-inset-bottom));
+    padding-left: 16px;
+
+    gap: 20px;
+
+    /* スクロールを邪魔しない */
+    overscroll-behavior-y: auto;
+    touch-action: pan-y;
+  }
+
+  /* wewe ロゴ */
+  #authScreen .auth-brand {
+    flex: 0 0 auto;
+    width: 100%;
+    text-align: center;
+  }
+
+  #authScreen .auth-logo {
+    font-size: 2.4rem;
+  }
+
+  /* ログイン・新規登録カード */
+  #authScreen .auth-card {
+    flex: 0 0 auto;
+
+    width: 100%;
+    max-width: 440px;
+
+    margin: 0 0 30px;
+
+    overflow: visible;
+  }
+
+  /* フォーム */
+  #authScreen .auth-form {
+    width: 100%;
+    padding: 22px 16px 28px;
+
+    display: flex;
+    flex-direction: column;
+
+    flex: 0 0 auto;
+  }
+
+  /* 入力欄 */
+  #authScreen input[type="text"],
+  #authScreen input[type="password"],
+  #authScreen input[type="color"] {
+    font-size: 16px;
+  }
+
+  /* 役割選択 */
+  #authScreen .role-selector {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+  }
+
+  #authScreen .role-option {
+    flex: 1;
+    min-width: 0;
+  }
+
+  #authScreen .role-card {
+    min-height: 90px;
+    padding: 12px 6px;
+  }
+
+  #authScreen .role-desc {
+    font-size: .68rem;
+    line-height: 1.35;
+  }
+
+  /* 登録ボタン */
+  #authScreen .auth-submit-btn {
+    min-height: 48px;
+    flex-shrink: 0;
+  }
+}
+
+
+/* ============================================================
+   小さいスマホ
+   ============================================================ */
+
+@media (max-width: 380px) {
+
+  #authScreen.auth-screen {
+    padding-top: max(20px, env(safe-area-inset-top));
+    padding-left: 12px;
+    padding-right: 12px;
+    padding-bottom: max(50px, env(safe-area-inset-bottom));
+
+    gap: 16px;
+  }
+
+  #authScreen .auth-form {
+    padding: 20px 14px 26px;
+  }
+
+  #authScreen .auth-logo {
+    font-size: 2.1rem;
+  }
+
+  #authScreen .role-card {
+    min-height: 85px;
+    padding: 10px 4px;
+  }
+
+  #authScreen .role-icon {
+    font-size: 1.4rem;
+  }
+
+  #authScreen .role-label {
+    font-size: .85rem;
+  }
+
+  #authScreen .role-desc {
+    font-size: .62rem;
+  }
+}
