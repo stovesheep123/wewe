@@ -2207,7 +2207,7 @@ async function saveProfile() {
     color = avatarNewColor || color; avatar_url = ''; avatar_icon = '';
   }
 
-  const { error } = await sb.from('profiles').update({ name, bio, color, avatar_url, avatar_icon }).eq('id', currentUser.id);
+  const { error } = await sb.from('profiles').update({ name, bio, color, avatar_url, }).eq('id', currentUser.id);
   btn.disabled = false; btn.textContent = '保存する';
   if (error) { err.textContent = '保存失敗: ' + error.message; return; }
 
