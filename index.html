@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>wewe - 先生と生徒のチャット</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ========== 認証画面 ========== -->
+  <div id="authScreen" class="auth-screen">
+    <div class="auth-brand">
+      <div class="auth-logo">wewe</div>
+      <p class="auth-tagline">先生と生徒をつなぐ</p>
+    </div>
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-auth="login">ログイン</button>
+        <button class="auth-tab" data-auth="register">新規登録</button>
+      </div>
+
+      <form id="loginForm" class="auth-form" novalidate>
+        <h2>ログイン</h2>
+        <div class="auth-field">
+          <label for="loginHandle">ユーザー名</label>
+          <input type="text" id="loginHandle" placeholder="handle" autocomplete="username" maxlength="30" />
+        </div>
+        <div class="auth-field">
+          <label for="loginPassword">パスワード</label>
+          <div class="password-wrap">
+            <input type="password" id="loginPassword" placeholder="パスワード" autocomplete="current-password" maxlength="100" />
+            <button type="button" class="pw-toggle" data-target="loginPassword">👁</button>
+          </div>
+        </div>
+        <div class="auth-error" id="loginError"></div>
+        <button type="submit" class="auth-submit-btn">ログイン</button>
+      </form>
+
+      <form id="registerForm" class="auth-form hidden" novalidate>
+        <h2>新規登録</h2>
+        <div class="auth-field">
+          <label for="regName">表示名</label>
+          <input type="text" id="regName" placeholder="あなたの名前" maxlength="50" />
+        </div>
+        <div class="auth-field">
+          <label for="regHandle">ユーザー名 <span class="auth-hint">(@以降。英数字・_のみ)</span></label>
+          <input type="text" id="regHandle" placeholder="handle" autocomplete="username" maxlength="30" />
+        </div>
+        <div class="auth-field">
+          <label for="regPassword">パスワード <span class="auth-hint">(6文字以上)</span></label>
+          <div class="password-wrap">
+            <input type="password" id="regPassword" placeholder="パスワード" autocomplete="new-password" maxlength="100" />
+            <button type="button" class="pw-toggle" data-target="regPassword">👁</button>
+          </div>
+        </div>
+        <div class="auth-field">
+          <label>役割</label>
+          <div class="role-selector">
+            <label class="role-option">
+              <input type="radio" name="regRole" value="sensei" id="roleSensei" />
+              <span class="role-card">
+                <span class="role-icon">👨‍🏫</span>
+                <span class="role-label">先生</span>
+                <span class="role-desc">お知らせ投稿・チャット許可管理</span>
+              </span>
+            </label>
+            <label class="role-option">
+              <input type="radio" name="regRole" value="seito" id="roleSeito" checked />
+              <span class="role-card">
+                <span class="role-icon">🎓</span>
+                <span class="role-label">生徒</span>
+                <span class="role-desc">先生へのリクエスト・チャット</span>
+              </span>
+            </label>
+          </div>
+        </div>
+        <div class="auth-field">
+          <label for="regColor">アバターカラー</label>
+          <input type="color" id="regColor" value="#1d9bf0" />
+        </div>
+        <div class="auth-error" id="registerError"></div>
+        <button type="submit" class="auth-submit-btn">登録する</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========== メインアプリ ========== -->
+  <div id="appScreen" class="app-screen hidden">
+
+    <!-- ===== 左サイドバー ===== -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-text">wewe</div>
+        <div class="current-user-badge" id="currentUserBadge"></div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <!-- ホームフィード -->
+        <button class="nav-btn active" data-view="home" id="navHome">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+          ホーム
+        </button>
+        <!-- チャット -->
+        <button class="nav-btn" data-view="chat" id="navChat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          チャット
+        </button>
+        <!-- メンバー -->
+        <button class="nav-btn" data-view="users" id="navUsers">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          メンバー
+        </button>
+        <!-- 掲示板 -->
+        <button class="nav-btn" data-view="noticeboard" id="navNotice">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+          掲示板
+        </button>
+        <!-- 目標 -->
+        <button class="nav-btn" data-view="goals" id="navGoals">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+          目標
+        </button>
+        <!-- 教科 -->
+        <button class="nav-btn" data-view="subjects" id="navSubjects">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+          教科
+        </button>
+        <!-- 許可管理 先生専用 -->
+        <button class="nav-btn sensei-only hidden" data-view="permissions" id="navPermissions">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          許可管理
+        </button>
+      </nav>
+
+      <!-- ── ホーム用サイドパネル ── -->
+      <div class="side-panel" id="homePanel">
+        <div class="conv-list-header"><span>フィード</span></div>
+        <!-- 生徒: リクエストボタン -->
+        <div class="seito-only hidden" id="seitoRequestArea">
+          <button class="request-trigger-btn" id="openRequestModal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            先生にリクエスト
+          </button>
+        </div>
+        <!-- 先生: 投稿ボタン -->
+        <div class="sensei-only hidden" id="senseiPostArea">
+          <button class="request-trigger-btn accent" id="openAnnModal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            お知らせを投稿
+          </button>
+        </div>
+        <!-- フィードタブ -->
+        <div class="feed-tab-bar">
+          <button class="feed-tab active" data-feed="all">すべて</button>
+          <button class="feed-tab" data-feed="exam">入試情報</button>
+          <button class="feed-tab" data-feed="test">テスト</button>
+          <button class="feed-tab" data-feed="announce">お知らせ</button>
+        </div>
+      </div>
+
+      <!-- ── チャット用サイドパネル ── -->
+      <div class="side-panel hidden" id="chatPanel-side">
+        <div class="conv-list-header">
+          <span>チャット</span>
+          <button class="new-chat-btn" id="newChatBtn" title="新しいチャット">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+        <div class="conv-list" id="convList"><p class="empty-hint">チャットがありません</p></div>
+      </div>
+
+      <!-- ── メンバー用サイドパネル ── -->
+      <div class="side-panel hidden" id="usersPanel">
+        <div class="conv-list-header"><span>メンバー一覧</span></div>
+        <div class="users-list" id="usersList"></div>
+      </div>
+
+      <!-- ── 掲示板サイドパネル ── -->
+      <div class="side-panel hidden" id="noticeboard-side">
+        <div class="conv-list-header">
+          <span>掲示板</span>
+          <button class="new-chat-btn sensei-only hidden" id="openNBModal" title="掲示板に投稿">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+        <div class="nb-filter-row">
+          <button class="nb-filter-btn active" data-author="all">すべて</button>
+          <button class="nb-filter-btn sensei-only hidden" data-author="mine">自分の投稿</button>
+        </div>
+        <div class="nb-index-list" id="nbIndexList">
+          <p class="empty-hint">読み込み中...</p>
+        </div>
+      </div>
+
+      <!-- ── 目標サイドパネル ── -->
+      <div class="side-panel hidden" id="goalsPanel">
+        <div class="conv-list-header"><span>目標ボード</span></div>
+        <div class="goals-side-tabs">
+          <button class="goals-side-tab active" data-gtab="mine">自分の目標</button>
+          <button class="goals-side-tab" data-gtab="shared">みんなの目標</button>
+        </div>
+        <!-- 自分の目標サマリー -->
+        <div class="goals-my-summary" id="goalsMySum">
+          <div class="goals-streak" id="goalsStreak">🔥 0日連続</div>
+          <div class="goals-checked-today" id="goalsCheckedToday"></div>
+        </div>
+      </div>
+
+      <!-- ── 教科サイドパネル ── -->
+      <div class="side-panel hidden" id="subjectsPanel">
+        <div class="conv-list-header"><span>教科を選ぶ</span></div>
+        <!-- 学校レベル切り替え -->
+        <div class="subj-level-row">
+          <button class="subj-level-btn active" data-level="jhs">中学校</button>
+          <button class="subj-level-btn" data-level="hs">高校</button>
+        </div>
+        <!-- 教科ボタン一覧 -->
+        <div class="subj-list" id="subjList">
+          <button class="subj-btn active" data-subj="math">
+            <span class="subj-icon">📐</span><span>数学</span>
+          </button>
+          <button class="subj-btn" data-subj="japanese">
+            <span class="subj-icon">📖</span><span>国語</span>
+          </button>
+          <button class="subj-btn" data-subj="english">
+            <span class="subj-icon">🌐</span><span>英語</span>
+          </button>
+          <button class="subj-btn" data-subj="science">
+            <span class="subj-icon">🔬</span><span>理科</span>
+          </button>
+          <button class="subj-btn" data-subj="social">
+            <span class="subj-icon">🗾</span><span>社会</span>
+          </button>
+        </div>
+        <!-- 先生: リソース追加ボタン -->
+        <div class="sensei-only hidden" style="padding:8px 12px">
+          <button class="request-trigger-btn accent" id="openSRModal">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            リソースを追加
+          </button>
+        </div>
+      </div>
+
+      <!-- ── 許可管理サイドパネル (先生) ── -->
+      <div class="side-panel hidden" id="permissionsPanel-side">
+        <div class="conv-list-header"><span>チャット許可管理</span></div>
+        <div class="permissions-panel" id="permissionsPanel"></div>
+      </div>
+
+      <!-- サイドバー下部 -->
+      <div class="sidebar-footer">
+        <div class="sidebar-user" id="sidebarUser" title="プロフィールを編集">
+          <div class="avatar sm avatar-clickable" id="sidebarAvatar">W</div>
+          <div class="sidebar-user-info">
+            <span class="sidebar-name" id="sidebarName">名前</span>
+            <span class="sidebar-handle" id="sidebarHandle">@handle</span>
+          </div>
+          <svg class="sidebar-edit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </div>
+        <button class="icon-btn" id="logoutBtn" title="ログアウト">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ===== メインコンテンツ ===== -->
+    <main class="app-main" id="appMain">
+
+      <!-- ── ホームフィード ── -->
+      <div class="main-view" id="homeView">
+        <div class="feed-header">
+          <h1>ホーム</h1>
+        </div>
+
+        <!-- 入試・学習情報ハブ -->
+        <div class="info-hub" id="infoHub">
+          <div class="info-hub-header">
+            <span class="info-hub-title">� 学習・入試情報</span>
+            <div class="info-hub-right">
+              <span class="info-hub-updated" id="infoHubUpdated"></span>
+              <button class="info-hub-refresh" id="infoHubRefresh" title="最新情報に更新">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                更新
+              </button>
+            </div>
+          </div>
+          <!-- タブ -->
+          <div class="info-hub-tabs">
+            <button class="info-hub-tab active" data-infotab="news">📰 入試ニュース</button>
+            <button class="info-hub-tab" data-infotab="study">📖 勉強情報</button>
+            <button class="info-hub-tab" data-infotab="moshi">📝 模試</button>
+            <button class="info-hub-tab" data-infotab="open">🏫 オープン<br>スクール</button>
+          </div>
+          <!-- 入試ニュース -->
+          <div class="info-hub-panel" id="infoTabNews">
+            <div class="news-list" id="examNewsList">
+              <div class="news-loading">ニュースを読み込み中...</div>
+            </div>
+          </div>
+          <!-- 勉強情報 -->
+          <div class="info-hub-panel hidden" id="infoTabStudy">
+            <div class="study-sections" id="studySections"></div>
+          </div>
+          <!-- 模試情報 -->
+          <div class="info-hub-panel hidden" id="infoTabMoshi">
+            <div class="news-list" id="moshiList">
+              <div class="news-loading">読み込み中...</div>
+            </div>
+          </div>
+          <!-- オープンハイスクール -->
+          <div class="info-hub-panel hidden" id="infoTabOpen">
+            <div class="news-list" id="openList">
+              <div class="news-loading">読み込み中...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- お知らせ・テスト情報フィード -->
+        <div class="ann-feed" id="annFeed">
+          <div class="ann-loading">読み込み中...</div>
+        </div>
+      </div>
+
+      <!-- ── チャットビュー ── -->
+      <div class="main-view hidden" id="chatView">
+        <!-- 未選択 -->
+        <div class="no-chat-selected" id="noChatSelected">
+          <div class="no-chat-icon">💬</div>
+          <h2>チャットを選択してください</h2>
+          <p>左のリストから相手を選んでください</p>
+        </div>
+        <!-- 会話パネル -->
+        <div class="chat-panel hidden" id="chatPanel">
+          <div class="chat-header">
+            <div class="avatar sm" id="chatPartnerAvatar">?</div>
+            <div class="chat-header-info">
+              <span class="chat-partner-name" id="chatPartnerName">相手</span>
+              <span class="chat-partner-handle" id="chatPartnerHandle">@handle</span>
+            </div>
+          </div>
+          <div class="messages-area" id="messagesArea"></div>
+          <div class="chat-input-area">
+            <div class="attach-preview" id="attachPreview"></div>
+            <div class="chat-input-row">
+              <label class="attach-btn" title="ファイルを追加">
+                <input type="file" id="chatFileInput"
+                  accept="image/*,.gif,video/*,.mp4,.webm,.mov,application/pdf"
+                  multiple hidden />
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              </label>
+              <textarea class="chat-textarea" id="chatInput" placeholder="メッセージを入力..." rows="1" maxlength="2000"></textarea>
+              <button class="send-btn" id="sendBtn" disabled>
+                <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── メンバービュー (mobile/large fallback) ── -->
+      <div class="main-view hidden" id="usersView">
+        <div class="feed-header"><h1>メンバー</h1></div>
+      </div>
+
+      <!-- ── 掲示板ビュー ── -->
+      <div class="main-view hidden" id="noticeboardView">
+        <div class="feed-header nb-feed-header">
+          <div>
+            <h1>📋 掲示板</h1>
+            <p class="feed-sub">先生からのお知らせ・重要事項</p>
+          </div>
+        </div>
+        <!-- 掲示板カード一覧 -->
+        <div class="nb-cards-wrap" id="nbCardsWrap">
+          <div class="ann-loading">読み込み中...</div>
+        </div>
+      </div>
+
+      <!-- ── 目標ビュー ── -->
+      <div class="main-view hidden" id="goalsView">
+        <div class="feed-header">
+          <h1>🎯 目標</h1>
+        </div>
+
+        <!-- カウントダウンウィジェット -->
+        <div class="countdown-section" id="countdownSection">
+          <div class="countdown-card" id="cdHighschool">
+            <div class="cd-label">🏫 高校入試</div>
+            <div class="cd-exam-name" id="cdHSName">大学入学共通テスト</div>
+            <div class="cd-numbers">
+              <div class="cd-block"><span class="cd-num" id="cdHSDays">--</span><span class="cd-unit">日</span></div>
+              <div class="cd-block"><span class="cd-num" id="cdHSHours">--</span><span class="cd-unit">時間</span></div>
+              <div class="cd-block"><span class="cd-num" id="cdHSMins">--</span><span class="cd-unit">分</span></div>
+            </div>
+            <div class="cd-date" id="cdHSDate"></div>
+          </div>
+          <div class="countdown-card cd-uni" id="cdUniversity">
+            <div class="cd-label">🎓 大学入試</div>
+            <div class="cd-exam-name" id="cdUniName">共通テスト</div>
+            <div class="cd-numbers">
+              <div class="cd-block"><span class="cd-num" id="cdUniDays">--</span><span class="cd-unit">日</span></div>
+              <div class="cd-block"><span class="cd-num" id="cdUniHours">--</span><span class="cd-unit">時間</span></div>
+              <div class="cd-block"><span class="cd-num" id="cdUniMins">--</span><span class="cd-unit">分</span></div>
+            </div>
+            <div class="cd-date" id="cdUniDate"></div>
+          </div>
+        </div>
+
+        <!-- 目標タブ切り替え -->
+        <div class="goals-tab-bar">
+          <button class="goals-tab active" data-gtab="mine">📝 自分の目標</button>
+          <button class="goals-tab" data-gtab="shared">🌏 みんなの目標</button>
+        </div>
+
+        <!-- 自分の目標パネル -->
+        <div class="goals-panel" id="goalsMinePanel">
+          <!-- 入力エリア -->
+          <div class="my-goal-card" id="myGoalCard">
+            <div class="my-goal-header">
+              <span class="my-goal-title">今日の目標</span>
+              <div class="my-goal-streak" id="myGoalStreak">🔥 0日連続</div>
+            </div>
+            <textarea
+              class="my-goal-textarea"
+              id="myGoalText"
+              placeholder="目標を書こう。例: 数学の微分を完璧にする、英単語100個覚える..."
+              maxlength="500"
+              rows="3"
+            ></textarea>
+            <div class="my-goal-actions">
+              <label class="my-goal-public-toggle">
+                <input type="checkbox" id="myGoalPublic" />
+                <span>みんなに公開する</span>
+              </label>
+              <div class="my-goal-btns">
+                <button class="goal-check-btn" id="goalCheckBtn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg>
+                  今日達成！
+                </button>
+                <button class="goal-save-btn" id="goalSaveBtn">保存</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- みんなの目標パネル -->
+        <div class="goals-panel hidden" id="goalsSharedPanel">
+          <div class="shared-goals-list" id="sharedGoalsList">
+            <div class="ann-loading">読み込み中...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 教科ビュー ── -->
+      <div class="main-view hidden" id="subjectsView">
+        <div class="feed-header subj-feed-header">
+          <div class="subj-header-left">
+            <div class="subj-current-icon" id="subjCurrentIcon">📐</div>
+            <div>
+              <h1 id="subjCurrentName">数学</h1>
+              <p class="feed-sub" id="subjCurrentLevel">中学校</p>
+            </div>
+          </div>
+          <div class="subj-header-tabs" id="subjHeaderTabs">
+            <button class="subj-type-btn active" data-type="all">すべて</button>
+            <button class="subj-type-btn" data-type="link">🔗 サイト</button>
+            <button class="subj-type-btn" data-type="tip">💡 ヒント</button>
+          </div>
+        </div>
+
+        <!-- 教科ごとのカード -->
+        <div class="sr-grid" id="srGrid">
+          <div class="ann-loading">読み込み中...</div>
+        </div>
+      </div>
+
+      <!-- ── 許可管理ビュー ── -->
+      <div class="main-view hidden" id="permissionsView">
+        <div class="feed-header"><h1>チャット許可管理</h1></div>
+      </div>
+
+    </main>
+
+  </div><!-- /appScreen -->
+
+  <!-- ========== 先生: お知らせ投稿モーダル ========== -->
+  <div class="modal-overlay hidden" id="annModal">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>お知らせを投稿</h3>
+        <button class="modal-close" id="closeAnnModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-field">
+          <label>カテゴリ</label>
+          <div class="cat-selector" id="catSelector">
+            <button class="cat-btn active" data-cat="info">📌 お知らせ</button>
+            <button class="cat-btn" data-cat="test">📝 テスト情報</button>
+            <button class="cat-btn" data-cat="exam">🏫 入試情報</button>
+          </div>
+        </div>
+        <div class="modal-field">
+          <label for="annTitle">タイトル</label>
+          <input type="text" id="annTitle" class="modal-input" placeholder="タイトルを入力" maxlength="100" />
+        </div>
+        <div class="modal-field">
+          <label for="annBody">本文</label>
+          <textarea id="annBody" class="modal-textarea" placeholder="内容を入力..." rows="4" maxlength="2000"></textarea>
+        </div>
+        <div class="modal-field">
+          <label>添付ファイル <span class="auth-hint">(画像・PDF・動画)</span></label>
+          <label class="file-upload-label">
+            <input type="file" id="annFileInput" accept="image/*,.gif,video/*,application/pdf" multiple hidden />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+            ファイルを選択
+          </label>
+          <div class="attach-preview" id="annPreview"></div>
+        </div>
+        <div class="modal-error" id="annError"></div>
+        <button class="auth-submit-btn" id="annSubmitBtn">投稿する</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 生徒: リクエスト送信モーダル ========== -->
+  <div class="modal-overlay hidden" id="requestModal">
+    <div class="modal sm-modal">
+      <div class="modal-head">
+        <h3>先生にリクエスト</h3>
+        <button class="modal-close" id="closeRequestModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-field">
+          <label for="reqTeacherSel">先生を選ぶ</label>
+          <select id="reqTeacherSel" class="modal-select"></select>
+        </div>
+        <div class="modal-field">
+          <label for="reqBody">リクエスト内容</label>
+          <textarea id="reqBody" class="modal-textarea" placeholder="例: 今日の数学の補習をお願いします" rows="3" maxlength="500"></textarea>
+        </div>
+        <div class="modal-error" id="reqError"></div>
+        <button class="auth-submit-btn" id="reqSubmitBtn">送る</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 掲示板: 投稿・編集モーダル ========== -->
+  <div class="modal-overlay hidden" id="nbModal">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="nbModalTitle">掲示板に投稿</h3>
+        <button class="modal-close" id="closeNBModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-field">
+          <label for="nbTitle">タイトル <span style="color:var(--danger)">*</span></label>
+          <input type="text" id="nbTitle" class="modal-input" placeholder="例: 明日の小テスト範囲について" maxlength="120" />
+        </div>
+        <div class="modal-field">
+          <label for="nbBody">本文</label>
+          <textarea id="nbBody" class="modal-textarea" placeholder="内容を入力してください..." rows="5" maxlength="3000"></textarea>
+        </div>
+        <div class="modal-field">
+          <label>カードカラー</label>
+          <div class="nb-color-picker" id="nbColorPicker">
+            <button class="nb-color-btn active" data-color="#1d9bf0" style="background:#1d9bf0"></button>
+            <button class="nb-color-btn" data-color="#f59e0b" style="background:#f59e0b"></button>
+            <button class="nb-color-btn" data-color="#10b981" style="background:#10b981"></button>
+            <button class="nb-color-btn" data-color="#ef4444" style="background:#ef4444"></button>
+            <button class="nb-color-btn" data-color="#a855f7" style="background:#a855f7"></button>
+            <button class="nb-color-btn" data-color="#f97316" style="background:#f97316"></button>
+          </div>
+        </div>
+        <div class="modal-field">
+          <label>
+            <input type="checkbox" id="nbPinned" style="margin-right:6px;accent-color:var(--accent)" />
+            📌 上部に固定する
+          </label>
+        </div>
+        <div class="modal-field">
+          <label>添付ファイル <span class="auth-hint">(画像・PDF・動画)</span></label>
+          <label class="file-upload-label">
+            <input type="file" id="nbFileInput" accept="image/*,.gif,video/*,application/pdf" multiple hidden />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+            ファイルを選択
+          </label>
+          <div class="attach-preview" id="nbPreview"></div>
+        </div>
+        <div class="modal-error" id="nbError"></div>
+        <button class="auth-submit-btn" id="nbSubmitBtn">投稿する</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 新規チャットモーダル ========== -->
+  <div class="modal-overlay hidden" id="newChatModal">
+    <div class="modal sm-modal">
+      <div class="modal-head">
+        <h3>新しいチャット</h3>
+        <button class="modal-close" id="closeNewChatModal">✕</button>
+      </div>
+      <p class="modal-hint" id="newChatHint"></p>
+      <div class="user-pick-list" id="userPickList"></div>
+    </div>
+  </div>
+
+  <!-- ========== 先生: リクエスト受信ポップアップ ========== -->
+  <div class="req-popup hidden" id="reqPopup">
+    <div class="req-popup-inner">
+      <div class="req-popup-header">
+        <span class="req-popup-icon">🔔</span>
+        <span class="req-popup-title">新しいリクエスト</span>
+        <button class="req-popup-close" id="reqPopupClose">✕</button>
+      </div>
+      <div class="req-popup-from" id="reqPopupFrom"></div>
+      <div class="req-popup-body" id="reqPopupBody"></div>
+      <div class="req-popup-actions">
+        <button class="req-popup-btn accept" id="reqPopupAccept">✓ 承認</button>
+        <button class="req-popup-btn decline" id="reqPopupDecline">✕ 断る</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 先生: 教科リソース追加・編集モーダル ========== -->
+  <div class="modal-overlay hidden" id="srModal">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="srModalTitle">リソースを追加</h3>
+        <button class="modal-close" id="closeSRModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <!-- タイプ切り替え -->
+        <div class="modal-field">
+          <label>種類</label>
+          <div class="cat-selector">
+            <button class="cat-btn active" data-srtype="link">🔗 おすすめサイト</button>
+            <button class="cat-btn" data-srtype="tip">💡 勉強のヒント</button>
+          </div>
+        </div>
+        <!-- 教科 -->
+        <div class="modal-field">
+          <label for="srSubject">教科</label>
+          <select id="srSubject" class="modal-select">
+            <option value="math">📐 数学</option>
+            <option value="japanese">📖 国語</option>
+            <option value="english">🌐 英語</option>
+            <option value="science">🔬 理科</option>
+            <option value="social">🗾 社会</option>
+          </select>
+        </div>
+        <!-- 学校レベル -->
+        <div class="modal-field">
+          <label for="srLevel">対象</label>
+          <select id="srLevel" class="modal-select">
+            <option value="both">中学・高校両方</option>
+            <option value="jhs">中学校のみ</option>
+            <option value="hs">高校のみ</option>
+          </select>
+        </div>
+        <!-- タイトル -->
+        <div class="modal-field">
+          <label for="srTitle">タイトル <span style="color:var(--danger)">*</span></label>
+          <input type="text" id="srTitle" class="modal-input" placeholder="例: NHK for School 数学" maxlength="100" />
+        </div>
+        <!-- URL (リンクのとき) -->
+        <div class="modal-field" id="srUrlField">
+          <label for="srUrl">URL</label>
+          <input type="url" id="srUrl" class="modal-input" placeholder="https://..." maxlength="500" />
+        </div>
+        <!-- ヒント本文 (ヒントのとき) -->
+        <div class="modal-field hidden" id="srTipField">
+          <label for="srTip">ヒント内容</label>
+          <textarea id="srTip" class="modal-textarea" rows="4" maxlength="1000" placeholder="例: 分数の割り算は「逆数のかけ算」に直すと解きやすい"></textarea>
+        </div>
+        <!-- 説明 -->
+        <div class="modal-field">
+          <label for="srDesc">説明 <span class="auth-hint">(任意)</span></label>
+          <textarea id="srDesc" class="modal-textarea" rows="2" maxlength="300" placeholder="このサイト/ヒントの説明"></textarea>
+        </div>
+        <div class="modal-error" id="srError"></div>
+        <button class="auth-submit-btn" id="srSubmitBtn">追加する</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== プロフィール編集モーダル ========== -->
+  <div class="modal-overlay hidden" id="profileModal">
+    <div class="modal profile-modal-wrap">
+      <div class="modal-head">
+        <h3>プロフィール編集</h3>
+        <button class="modal-close" id="closeProfileModal">✕</button>
+      </div>
+      <div class="modal-body">
+
+        <!-- アバタープレビュー大 -->
+        <div class="profile-avatar-center">
+          <div class="profile-avatar-preview" id="profileAvatarPreview">W</div>
+          <span class="profile-avatar-label">アバター</span>
+        </div>
+
+        <!-- 3つのタブ: 写真 / 絵文字 / カラー -->
+        <div class="avatar-tab-bar">
+          <button class="avatar-tab active" data-atab="photo">📷 写真</button>
+          <button class="avatar-tab" data-atab="emoji">😊 絵文字</button>
+          <button class="avatar-tab" data-atab="color">🎨 カラー</button>
+        </div>
+
+        <!-- 写真タブ -->
+        <div class="avatar-tab-panel" id="avatarTabPhoto">
+          <label class="avatar-upload-drop" id="avatarUploadDrop">
+            <input type="file" id="avatarFileInput" accept="image/*" hidden />
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="32" height="32"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span>クリックして写真を選択</span>
+            <span class="avatar-upload-hint">JPG・PNG・GIF・WebP 対応、最大5MB</span>
+          </label>
+          <div class="avatar-photo-preview-wrap hidden" id="avatarPhotoPreviewWrap">
+            <img id="avatarPhotoPreview" src="" alt="プレビュー" class="avatar-photo-preview" />
+            <button class="avatar-remove-photo" id="avatarRemovePhoto">× 写真を削除</button>
+          </div>
+        </div>
+
+        <!-- 絵文字タブ -->
+        <div class="avatar-tab-panel hidden" id="avatarTabEmoji">
+          <div class="avatar-emoji-search-wrap">
+            <input type="text" id="avatarEmojiSearch" class="avatar-emoji-search" placeholder="絵文字を検索..." maxlength="20" />
+          </div>
+          <div class="avatar-emoji-grid" id="avatarEmojiGrid"></div>
+        </div>
+
+        <!-- カラータブ -->
+        <div class="avatar-tab-panel hidden" id="avatarTabColor">
+          <p class="avatar-color-hint">背景色を選んで、名前の頭文字をアバターに使います</p>
+          <div class="avatar-color-swatches" id="avatarColorSwatches"></div>
+          <div class="avatar-color-custom">
+            <label>カスタムカラー
+              <input type="color" id="avatarColorCustom" value="#1d9bf0" />
+            </label>
+          </div>
+        </div>
+
+        <!-- 表示名 -->
+        <div class="modal-field" style="margin-top:4px">
+          <label for="profileNameInput">表示名</label>
+          <input type="text" id="profileNameInput" class="modal-input" placeholder="表示名" maxlength="50" />
+        </div>
+        <!-- 自己紹介 -->
+        <div class="modal-field">
+          <label for="profileBioInput">自己紹介 <span class="auth-hint">(任意)</span></label>
+          <textarea id="profileBioInput" class="modal-textarea" rows="2" maxlength="160" placeholder="一言自己紹介..."></textarea>
+        </div>
+
+        <div class="modal-error" id="profileError"></div>
+        <button class="auth-submit-btn" id="saveProfileBtn">保存する</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== ライトボックス ========== -->
+  <div class="lightbox hidden" id="lightbox">
+    <button class="lightbox-close" id="lightboxClose">✕</button>
+    <div class="lightbox-content" id="lightboxContent"></div>
+  </div>
+
+  <!-- ========== トースト ========== -->
+  <div class="toast hidden" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
