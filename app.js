@@ -4,21 +4,21 @@
 'use strict';
 
 // ==================== 状態 ====================
-let currentUser    = null;
+let currentUser = null;
 let currentProfile = null;
-let allProfiles    = [];
-let conversations  = [];
-let activeConvId   = null;
-let activePartner  = null;
-let pendingFiles   = [];      // chat attach
-let annFiles       = [];      // announcement attach
-let feedFilter     = 'all';   // 'all' | 'exam' | 'test' | 'announce'
-let pendingReqId   = null;    // popup中のリクエストID
+let allProfiles = [];
+let conversations = [];
+let activeConvId = null;
+let activePartner = null;
+let pendingFiles = [];      // chat attach
+let annFiles = [];      // announcement attach
+let feedFilter = 'all';   // 'all' | 'exam' | 'test' | 'announce'
+let pendingReqId = null;    // popup中のリクエストID
 
-let msgChannel  = null;
+let msgChannel = null;
 let convChannel = null;
-let annChannel  = null;
-let reqChannel  = null;
+let annChannel = null;
+let reqChannel = null;
 
 // ==================== 起動 ====================
 document.addEventListener('DOMContentLoaded', async () => {
@@ -28,8 +28,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   else showAuthScreen();
 
   sb.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_IN'  && session) await onSignedIn(session.user);
-    if (event === 'SIGNED_OUT')             onSignedOut();
+    if (event === 'SIGNED_IN' && session) await onSignedIn(session.user);
+    if (event === 'SIGNED_OUT') onSignedOut();
   });
 });
 
@@ -56,9 +56,9 @@ function setupAuthUI() {
 
   document.getElementById('loginForm').addEventListener('submit', async e => {
     e.preventDefault();
-    const handle = document.getElementById('loginHandle').value.trim().toLowerCase().replace(/[^a-z0-9_]/g,'');
-    const pw     = document.getElementById('loginPassword').value;
-    const err    = document.getElementById('loginError');
+    const handle = document.getElementById('loginHandle').value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '');
+    const pw = document.getElementById('loginPassword').value;
+    const err = document.getElementById('loginError');
     err.textContent = '';
     if (!handle || !pw) { err.textContent = '全項目を入力してください'; return; }
     setBtnLoading('loginForm', true, 'ログイン');
@@ -69,16 +69,16 @@ function setupAuthUI() {
 
   document.getElementById('registerForm').addEventListener('submit', async e => {
     e.preventDefault();
-    const name   = document.getElementById('regName').value.trim();
-    const handle = document.getElementById('regHandle').value.trim().replace(/[^a-zA-Z0-9_]/g,'').toLowerCase();
-    const pw     = document.getElementById('regPassword').value;
-    const color  = document.getElementById('regColor').value;
-    const role   = (document.querySelector('input[name="regRole"]:checked') || {}).value || 'seito';
-    const err    = document.getElementById('registerError');
+    const name = document.getElementById('regName').value.trim();
+    const handle = document.getElementById('regHandle').value.trim().replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
+    const pw = document.getElementById('regPassword').value;
+    const color = document.getElementById('regColor').value;
+    const role = (document.querySelector('input[name="regRole"]:checked') || {}).value || 'seito';
+    const err = document.getElementById('registerError');
     err.textContent = '';
-    if (!name)             { err.textContent = '表示名を入力してください'; return; }
+    if (!name) { err.textContent = '表示名を入力してください'; return; }
     if (handle.length < 2) { err.textContent = 'ユーザー名は2文字以上'; return; }
-    if (pw.length < 6)     { err.textContent = 'パスワードは6文字以上'; return; }
+    if (pw.length < 6) { err.textContent = 'パスワードは6文字以上'; return; }
     const { data: ex } = await sb.from('profiles').select('handle').eq('handle', handle).maybeSingle();
     if (ex) { err.textContent = 'そのユーザー名は使われています'; return; }
     setBtnLoading('registerForm', true, '登録する');
@@ -98,10 +98,10 @@ function setBtnLoading(formId, loading, label) {
   btn.textContent = loading ? '処理中...' : label;
 }
 function authErr(msg) {
-  if (msg.includes('Invalid login'))       return 'ユーザー名またはパスワードが違います';
+  if (msg.includes('Invalid login')) return 'ユーザー名またはパスワードが違います';
   if (msg.includes('Email not confirmed')) return 'メール確認が必要です';
   if (msg.includes('already registered')) return 'そのユーザー名は既に登録されています';
-  if (msg.includes('Password'))           return 'パスワードは6文字以上';
+  if (msg.includes('Password')) return 'パスワードは6文字以上';
   return msg;
 }
 
@@ -193,7 +193,7 @@ async function initApp() {
 function renderSidebarProfile() {
   const av = document.getElementById('sidebarAvatar');
   if (av) setAvatarEl(av, currentProfile, 'sm');
-  setText('sidebarName',   currentProfile.name);
+  setText('sidebarName', currentProfile.name);
   setText('sidebarHandle', '@' + currentProfile.handle);
   const badge = document.getElementById('currentUserBadge');
   if (badge) {
@@ -205,13 +205,13 @@ function renderSidebarProfile() {
 // ==================== ナビタブ ====================
 function setupNavTabs() {
   const panels = {
-    home:         ['homePanel',            'homeView'],
-    chat:         ['chatPanel-side',       'chatView'],
-    users:        ['usersPanel',           'usersView'],
-    noticeboard:  ['noticeboard-side',     'noticeboardView'],
-    goals:        ['goalsPanel',           'goalsView'],
-    subjects:     ['subjectsPanel',        'subjectsView'],
-    permissions:  ['permissionsPanel-side','permissionsView'],
+    home: ['homePanel', 'homeView'],
+    chat: ['chatPanel-side', 'chatView'],
+    users: ['usersPanel', 'usersView'],
+    noticeboard: ['noticeboard-side', 'noticeboardView'],
+    goals: ['goalsPanel', 'goalsView'],
+    subjects: ['subjectsPanel', 'subjectsView'],
+    permissions: ['permissionsPanel-side', 'permissionsView'],
   };
 
   document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -276,63 +276,63 @@ const INFO_HUB_REFRESH_INTERVAL = 30 * 60 * 1000; // 30 minutes
 // Curated study resources — always available, no network needed
 const STUDY_RESOURCES = {
   free: [
-    { name: 'NHK for School',        url: 'https://www.nhk.or.jp/school/',          icon: '📺', desc: '理科・社会・国語など全教科の動画授業。無料で視聴可能' },
-    { name: 'すらら',                url: 'https://surala.jp/',                      icon: '💻', desc: '中学・高校の全教科をアニメ動画で学べるオンライン教材' },
-    { name: 'スタディサプリ',        url: 'https://studysapuri.jp/',                 icon: '📱', desc: '月額定額で有名講師の映像授業が見放題。中学〜大学受験対応' },
-    { name: 'Quizlet',               url: 'https://quizlet.com/ja',                  icon: '🃏', desc: '単語帳・フラッシュカードで英語・社会の暗記に最適' },
-    { name: 'Khan Academy (日本語)', url: 'https://ja.khanacademy.org/',             icon: '🎓', desc: '数学・理科を段階的に学べる無料プラットフォーム' },
-    { name: 'e-Stat 統計で学ぶ',     url: 'https://www.e-stat.go.jp/',               icon: '📊', desc: '社会科のデータ調べに便利な政府統計ポータル' },
-    { name: '古文単語・文法まとめ',  url: 'https://kobun.weblio.jp/',                icon: '📜', desc: '古文の単語・助動詞・文法をまとめて確認できる辞典' },
-    { name: 'Duolingo',              url: 'https://ja.duolingo.com/',                icon: '🦜', desc: '英語・他の外国語を楽しく習慣化できるゲーム感覚アプリ' },
+    { name: 'NHK for School', url: 'https://www.nhk.or.jp/school/', icon: '📺', desc: '理科・社会・国語など全教科の動画授業。無料で視聴可能' },
+    { name: 'すらら', url: 'https://surala.jp/', icon: '💻', desc: '中学・高校の全教科をアニメ動画で学べるオンライン教材' },
+    { name: 'スタディサプリ', url: 'https://studysapuri.jp/', icon: '📱', desc: '月額定額で有名講師の映像授業が見放題。中学〜大学受験対応' },
+    { name: 'Quizlet', url: 'https://quizlet.com/ja', icon: '🃏', desc: '単語帳・フラッシュカードで英語・社会の暗記に最適' },
+    { name: 'Khan Academy (日本語)', url: 'https://ja.khanacademy.org/', icon: '🎓', desc: '数学・理科を段階的に学べる無料プラットフォーム' },
+    { name: 'e-Stat 統計で学ぶ', url: 'https://www.e-stat.go.jp/', icon: '📊', desc: '社会科のデータ調べに便利な政府統計ポータル' },
+    { name: '古文単語・文法まとめ', url: 'https://kobun.weblio.jp/', icon: '📜', desc: '古文の単語・助動詞・文法をまとめて確認できる辞典' },
+    { name: 'Duolingo', url: 'https://ja.duolingo.com/', icon: '🦜', desc: '英語・他の外国語を楽しく習慣化できるゲーム感覚アプリ' },
   ],
   exam: [
-    { name: '大学入試センター公式',  url: 'https://www.dnc.ac.jp/',                  icon: '🏛️', desc: '共通テストの公式情報・過去問・出願日程' },
-    { name: '東京都教育委員会',      url: 'https://www.metro.ed.jp/',                icon: '🗼', desc: '都立高校入試情報・入試問題・スピーキングテスト' },
-    { name: '文部科学省',            url: 'https://www.mext.go.jp/',                 icon: '📋', desc: '学習指導要領・入試制度の公式情報' },
-    { name: '旺文社 入試情報',       url: 'https://www.obunsha.co.jp/',              icon: '📚', desc: '入試データ・過去問・参考書の老舗' },
-    { name: 'Benesse 進研ゼミ',      url: 'https://www.benesse.co.jp/',              icon: '✏️', desc: '高校・大学受験対策の情報と模試日程' },
-    { name: '河合塾 入試情報',       url: 'https://www.keinet.ne.jp/',               icon: '📈', desc: '大学偏差値・入試難易度・合格ボーダーライン' },
+    { name: '大学入試センター公式', url: 'https://www.dnc.ac.jp/', icon: '🏛️', desc: '共通テストの公式情報・過去問・出願日程' },
+    { name: '東京都教育委員会', url: 'https://www.metro.ed.jp/', icon: '🗼', desc: '都立高校入試情報・入試問題・スピーキングテスト' },
+    { name: '文部科学省', url: 'https://www.mext.go.jp/', icon: '📋', desc: '学習指導要領・入試制度の公式情報' },
+    { name: '旺文社 入試情報', url: 'https://www.obunsha.co.jp/', icon: '📚', desc: '入試データ・過去問・参考書の老舗' },
+    { name: 'Benesse 進研ゼミ', url: 'https://www.benesse.co.jp/', icon: '✏️', desc: '高校・大学受験対策の情報と模試日程' },
+    { name: '河合塾 入試情報', url: 'https://www.keinet.ne.jp/', icon: '📈', desc: '大学偏差値・入試難易度・合格ボーダーライン' },
   ],
   tips: [
     { name: 'ポモドーロ・テクニック', url: 'https://studyhacker.net/pomodoro-technique', icon: '🍅', desc: '25分集中→5分休憩を繰り返す最強の集中法' },
-    { name: '分散学習のすすめ',       url: 'https://studyhacker.net/distributed-practice', icon: '🧠', desc: '毎日少しずつ繰り返すことで記憶定着率が大幅アップ' },
-    { name: '睡眠と記憶の科学',       url: 'https://www.sleepfoundation.org/how-sleep-works/memory', icon: '😴', desc: '睡眠中に記憶が定着。7〜8時間の睡眠が学習効率を高める' },
+    { name: '分散学習のすすめ', url: 'https://studyhacker.net/distributed-practice', icon: '🧠', desc: '毎日少しずつ繰り返すことで記憶定着率が大幅アップ' },
+    { name: '睡眠と記憶の科学', url: 'https://www.sleepfoundation.org/how-sleep-works/memory', icon: '😴', desc: '睡眠中に記憶が定着。7〜8時間の睡眠が学習効率を高める' },
   ],
 };
 
 // RSS feeds tried in order — first success wins
 const NEWS_FEEDS = [
-  { url: 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://www3.nhk.or.jp/rss/news/cat6.xml'),              tag: 'NHK教育',  tagClass: 'tag-nyushi',  keywords: ['入試','受験','高校','大学','試験'] },
-  { url: 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://rss.itmedia.co.jp/rss/2.0/news_bursts.xml'),      tag: '教育ニュース', tagClass: 'tag-study', keywords: [] },
-  { url: 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://www.asahi.com/rss/asahi/newsheadlines.rdf'),       tag: '朝日新聞',  tagClass: 'tag-nyushi',  keywords: ['入試','受験','高校','大学'] },
+  { url: 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://www3.nhk.or.jp/rss/news/cat6.xml'), tag: 'NHK教育', tagClass: 'tag-nyushi', keywords: ['入試', '受験', '高校', '大学', '試験'] },
+  { url: 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://rss.itmedia.co.jp/rss/2.0/news_bursts.xml'), tag: '教育ニュース', tagClass: 'tag-study', keywords: [] },
+  { url: 'https://api.allorigins.win/get?url=' + encodeURIComponent('https://www.asahi.com/rss/asahi/newsheadlines.rdf'), tag: '朝日新聞', tagClass: 'tag-nyushi', keywords: ['入試', '受験', '高校', '大学'] },
 ];
 
 // Static fallback news items shown when all RSS fail
 const FALLBACK_NEWS = [
-  { title: '2027年度 大学入学共通テスト 出願受付スケジュール発表',   link: 'https://www.dnc.ac.jp/', pub: '2026-10-01', tag: '共通テスト', tagClass: 'tag-daigaku' },
-  { title: '都立高校入試 英語スピーキングテスト 実施要項発表',       link: 'https://www.metro.ed.jp/', pub: '2026-09-20', tag: '高校入試', tagClass: 'tag-koukou' },
-  { title: '私立高校 推薦・単願入試 出願期間まとめ 2027年度版',    link: 'https://www.obunsha.co.jp/', pub: '2026-09-15', tag: '高校入試', tagClass: 'tag-koukou' },
-  { title: '国公立大学 2次試験 日程・倍率速報',                     link: 'https://www.keinet.ne.jp/', pub: '2026-09-10', tag: '大学入試', tagClass: 'tag-daigaku' },
-  { title: '大学入学共通テスト 数学・理科の出題傾向分析 最新版',     link: 'https://www.dnc.ac.jp/', pub: '2026-09-05', tag: '共通テスト', tagClass: 'tag-daigaku' },
-  { title: '高校受験 英検・数検の活用校が増加 最新動向',            link: 'https://www.obunsha.co.jp/', pub: '2026-08-28', tag: '高校入試', tagClass: 'tag-koukou' },
+  { title: '2027年度 大学入学共通テスト 出願受付スケジュール発表', link: 'https://www.dnc.ac.jp/', pub: '2026-10-01', tag: '共通テスト', tagClass: 'tag-daigaku' },
+  { title: '都立高校入試 英語スピーキングテスト 実施要項発表', link: 'https://www.metro.ed.jp/', pub: '2026-09-20', tag: '高校入試', tagClass: 'tag-koukou' },
+  { title: '私立高校 推薦・単願入試 出願期間まとめ 2027年度版', link: 'https://www.obunsha.co.jp/', pub: '2026-09-15', tag: '高校入試', tagClass: 'tag-koukou' },
+  { title: '国公立大学 2次試験 日程・倍率速報', link: 'https://www.keinet.ne.jp/', pub: '2026-09-10', tag: '大学入試', tagClass: 'tag-daigaku' },
+  { title: '大学入学共通テスト 数学・理科の出題傾向分析 最新版', link: 'https://www.dnc.ac.jp/', pub: '2026-09-05', tag: '共通テスト', tagClass: 'tag-daigaku' },
+  { title: '高校受験 英検・数検の活用校が増加 最新動向', link: 'https://www.obunsha.co.jp/', pub: '2026-08-28', tag: '高校入試', tagClass: 'tag-koukou' },
 ];
 
 const FALLBACK_MOSHI = [
-  { title: '進研模試 高1・高2 2026年11月実施 申込受付中',          link: 'https://www.benesse.co.jp/zemi/examination/', pub: '2026-10-01', tag: '進研模試',  tagClass: 'tag-moshi', source: 'Benesse' },
-  { title: '河合塾 全統共通テスト模試 11月 申込締切10/15',         link: 'https://www.kawai-juku.ac.jp/moshi/',           pub: '2026-09-25', tag: '河合塾',    tagClass: 'tag-moshi', source: '河合塾' },
-  { title: '駿台模試 高3・高卒生 第3回 11月実施',                  link: 'https://www.sundai.ac.jp/exam/',                pub: '2026-09-20', tag: '駿台',      tagClass: 'tag-moshi', source: '駿台' },
-  { title: '東京都 中学生 都立高校進学相談模試 実施要項',           link: 'https://www.metro.ed.jp/',                      pub: '2026-09-15', tag: '都立入試',  tagClass: 'tag-moshi', source: '東京都' },
-  { title: '旺文社 全国統一中学生テスト 11月3日 無料実施',         link: 'https://www.obunsha.co.jp/service/zentoko/',    pub: '2026-09-10', tag: '無料模試',  tagClass: 'tag-moshi', source: '旺文社' },
-  { title: 'Z会 高校受験コース 模擬試験 2026年秋期 受付開始',      link: 'https://www.zkai.co.jp/',                       pub: '2026-09-05', tag: 'Z会',       tagClass: 'tag-moshi', source: 'Z会' },
+  { title: '進研模試 高1・高2 2026年11月実施 申込受付中', link: 'https://www.benesse.co.jp/zemi/examination/', pub: '2026-10-01', tag: '進研模試', tagClass: 'tag-moshi', source: 'Benesse' },
+  { title: '河合塾 全統共通テスト模試 11月 申込締切10/15', link: 'https://www.kawai-juku.ac.jp/moshi/', pub: '2026-09-25', tag: '河合塾', tagClass: 'tag-moshi', source: '河合塾' },
+  { title: '駿台模試 高3・高卒生 第3回 11月実施', link: 'https://www.sundai.ac.jp/exam/', pub: '2026-09-20', tag: '駿台', tagClass: 'tag-moshi', source: '駿台' },
+  { title: '東京都 中学生 都立高校進学相談模試 実施要項', link: 'https://www.metro.ed.jp/', pub: '2026-09-15', tag: '都立入試', tagClass: 'tag-moshi', source: '東京都' },
+  { title: '旺文社 全国統一中学生テスト 11月3日 無料実施', link: 'https://www.obunsha.co.jp/service/zentoko/', pub: '2026-09-10', tag: '無料模試', tagClass: 'tag-moshi', source: '旺文社' },
+  { title: 'Z会 高校受験コース 模擬試験 2026年秋期 受付開始', link: 'https://www.zkai.co.jp/', pub: '2026-09-05', tag: 'Z会', tagClass: 'tag-moshi', source: 'Z会' },
 ];
 
 const FALLBACK_OPEN = [
-  { title: '開成高校 第1回 学校説明会 10月19日(日) 要予約',       link: 'https://www.kaiseigakuen.jp/',   pub: '2026-10-01', tag: '私立高校', tagClass: 'tag-open', source: '開成' },
-  { title: '都立日比谷高校 オープンスクール 11月2日 申込開始',     link: 'https://www.metro.ed.jp/',      pub: '2026-09-28', tag: '都立高校', tagClass: 'tag-open', source: '都立日比谷' },
-  { title: '慶應義塾高校 学校見学会 10月25日 受付中',             link: 'https://www.khs.keio.ac.jp/',   pub: '2026-09-20', tag: '私立高校', tagClass: 'tag-open', source: '慶應' },
-  { title: '早稲田実業 文化祭・学校説明会 11月8日',               link: 'https://www.wasedajg.ed.jp/',   pub: '2026-09-18', tag: '私立高校', tagClass: 'tag-open', source: '早実' },
-  { title: '筑波大学附属駒場 学校説明会 11月15日',                link: 'https://www.komaba-s.tsukuba.ac.jp/', pub: '2026-09-15', tag: '国立高校', tagClass: 'tag-open', source: '筑駒' },
-  { title: '都立西高校 オープンスクール 10月12日 申込締切10/5',   link: 'https://www.metro.ed.jp/',      pub: '2026-09-10', tag: '都立高校', tagClass: 'tag-open', source: '都立西' },
+  { title: '開成高校 第1回 学校説明会 10月19日(日) 要予約', link: 'https://www.kaiseigakuen.jp/', pub: '2026-10-01', tag: '私立高校', tagClass: 'tag-open', source: '開成' },
+  { title: '都立日比谷高校 オープンスクール 11月2日 申込開始', link: 'https://www.metro.ed.jp/', pub: '2026-09-28', tag: '都立高校', tagClass: 'tag-open', source: '都立日比谷' },
+  { title: '慶應義塾高校 学校見学会 10月25日 受付中', link: 'https://www.khs.keio.ac.jp/', pub: '2026-09-20', tag: '私立高校', tagClass: 'tag-open', source: '慶應' },
+  { title: '早稲田実業 文化祭・学校説明会 11月8日', link: 'https://www.wasedajg.ed.jp/', pub: '2026-09-18', tag: '私立高校', tagClass: 'tag-open', source: '早実' },
+  { title: '筑波大学附属駒場 学校説明会 11月15日', link: 'https://www.komaba-s.tsukuba.ac.jp/', pub: '2026-09-15', tag: '国立高校', tagClass: 'tag-open', source: '筑駒' },
+  { title: '都立西高校 オープンスクール 10月12日 申込締切10/5', link: 'https://www.metro.ed.jp/', pub: '2026-09-10', tag: '都立高校', tagClass: 'tag-open', source: '都立西' },
 ];
 
 function setupInfoHub() {
@@ -342,7 +342,7 @@ function setupInfoHub() {
       document.querySelectorAll('.info-hub-tab').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       const tab = btn.dataset.infotab;
-      ['news','study','moshi','open'].forEach(t => {
+      ['news', 'study', 'moshi', 'open'].forEach(t => {
         document.getElementById('infoTab' + t.charAt(0).toUpperCase() + t.slice(1))
           ?.classList.toggle('hidden', t !== tab);
       });
@@ -388,17 +388,17 @@ async function fetchRSSItems(feedConfigs, limit = 8) {
   for (const feed of feedConfigs) {
     if (items.length >= limit) break;
     try {
-      const res  = await fetch(feed.url, { signal: AbortSignal.timeout(7000) });
+      const res = await fetch(feed.url, { signal: AbortSignal.timeout(7000) });
       if (!res.ok) continue;
       const json = await res.json();
       if (!json?.contents) continue;
-      const xml  = new DOMParser().parseFromString(json.contents, 'text/xml');
+      const xml = new DOMParser().parseFromString(json.contents, 'text/xml');
       if (xml.querySelector('parsererror')) continue;
 
       [...xml.querySelectorAll('item')].slice(0, limit).forEach(el => {
         const title = el.querySelector('title')?.textContent?.trim() || '';
-        const link  = el.querySelector('link')?.textContent?.trim()  || '#';
-        const pub   = el.querySelector('pubDate')?.textContent?.trim() || '';
+        const link = el.querySelector('link')?.textContent?.trim() || '#';
+        const pub = el.querySelector('pubDate')?.textContent?.trim() || '';
         if (!title) return;
         // keyword filter if specified
         if (feed.keywords?.length) {
@@ -430,7 +430,7 @@ function renderNewsList(listId, items, fallback) {
       <div class="news-item-content">
         <div class="news-item-title">${escHtml(item.title)}</div>
         <div style="display:flex;gap:6px;align-items:center;margin-top:2px;flex-wrap:wrap">
-          ${item.pub  ? `<span class="news-item-meta">${escHtml(fmtPubDate(item.pub))}</span>` : ''}
+          ${item.pub ? `<span class="news-item-meta">${escHtml(fmtPubDate(item.pub))}</span>` : ''}
           ${item.source ? `<span class="news-item-source">${escHtml(item.source)}</span>` : ''}
         </div>
       </div>
@@ -447,7 +447,7 @@ async function loadExamNews() {
 
   const examFeeds = NEWS_FEEDS.map(f => ({
     ...f,
-    keywords: ['入試','受験','高校','大学','試験','学力','共通テスト','センター'],
+    keywords: ['入試', '受験', '高校', '大学', '試験', '学力', '共通テスト', 'センター'],
   }));
 
   const items = await fetchRSSItems(examFeeds, 10);
@@ -461,7 +461,7 @@ async function loadMoshi() {
 
   const moshiFeeds = NEWS_FEEDS.map(f => ({
     ...f,
-    keywords: ['模試','模擬','テスト','試験','申込','受付','全統'],
+    keywords: ['模試', '模擬', 'テスト', '試験', '申込', '受付', '全統'],
   }));
 
   const items = await fetchRSSItems(moshiFeeds, 8);
@@ -475,7 +475,7 @@ async function loadOpenSchool() {
 
   const openFeeds = NEWS_FEEDS.map(f => ({
     ...f,
-    keywords: ['オープン','学校見学','説明会','文化祭','体験','見学'],
+    keywords: ['オープン', '学校見学', '説明会', '文化祭', '体験', '見学'],
   }));
 
   const items = await fetchRSSItems(openFeeds, 8);
@@ -489,8 +489,8 @@ function renderStudyResources() {
 
   const sections = [
     { title: '📖 無料学習サイト・アプリ', items: STUDY_RESOURCES.free },
-    { title: '🏛️ 入試・受験公式情報',     items: STUDY_RESOURCES.exam },
-    { title: '💡 勉強法ヒント',           items: STUDY_RESOURCES.tips },
+    { title: '🏛️ 入試・受験公式情報', items: STUDY_RESOURCES.exam },
+    { title: '💡 勉強法ヒント', items: STUDY_RESOURCES.tips },
   ];
 
   sections.forEach(sec => {
@@ -545,11 +545,11 @@ function renderAnnFeed(data) {
   // データが渡されなければ再取得
   if (!data) { loadAnnouncements(); return; }
 
-  const filtered = feedFilter === 'all'      ? data
-    : feedFilter === 'exam'     ? data.filter(a => a.category === 'exam')
-    : feedFilter === 'test'     ? data.filter(a => a.category === 'test')
-    : feedFilter === 'announce' ? data.filter(a => a.category === 'info')
-    : data;
+  const filtered = feedFilter === 'all' ? data
+    : feedFilter === 'exam' ? data.filter(a => a.category === 'exam')
+      : feedFilter === 'test' ? data.filter(a => a.category === 'test')
+        : feedFilter === 'announce' ? data.filter(a => a.category === 'info')
+          : data;
 
   feed.innerHTML = '';
   if (filtered.length === 0) {
@@ -562,11 +562,11 @@ function renderAnnFeed(data) {
 
 function buildAnnCard(ann) {
   const author = ann.profiles || getProfile(ann.author_id) || {};
-  const card   = document.createElement('div');
+  const card = document.createElement('div');
   card.className = 'ann-card';
 
   const catLabels = { info: 'お知らせ', test: 'テスト情報', exam: '入試情報', news: 'ニュース' };
-  const catLabel  = catLabels[ann.category] || ann.category;
+  const catLabel = catLabels[ann.category] || ann.category;
 
   card.innerHTML = `
     <div class="ann-card-header">
@@ -580,7 +580,7 @@ function buildAnnCard(ann) {
       <span class="cat-tag ${ann.category}">${escHtml(catLabel)}</span>
     </div>
     ${ann.title ? `<div class="ann-card-title">${escHtml(ann.title)}</div>` : ''}
-    ${ann.body  ? `<div class="ann-card-body">${escHtml(ann.body)}</div>` : ''}
+    ${ann.body ? `<div class="ann-card-body">${escHtml(ann.body)}</div>` : ''}
   `;
 
   const attachments = ann.attachments || [];
@@ -649,7 +649,7 @@ function setupAnnModal() {
 function closeAnnModal() {
   document.getElementById('annModal').classList.add('hidden');
   document.getElementById('annTitle').value = '';
-  document.getElementById('annBody').value  = '';
+  document.getElementById('annBody').value = '';
   document.getElementById('annError').textContent = '';
   annFiles = [];
   renderAnnPreview();
@@ -667,9 +667,9 @@ function renderAnnPreview() {
 
 async function submitAnnouncement() {
   const title = document.getElementById('annTitle').value.trim();
-  const body  = document.getElementById('annBody').value.trim();
-  const cat   = document.querySelector('.cat-btn.active')?.dataset.cat || 'info';
-  const err   = document.getElementById('annError');
+  const body = document.getElementById('annBody').value.trim();
+  const cat = document.querySelector('.cat-btn.active')?.dataset.cat || 'info';
+  const err = document.getElementById('annError');
   err.textContent = '';
 
   if (!title && !body && annFiles.length === 0) {
@@ -682,9 +682,9 @@ async function submitAnnouncement() {
   const attachments = (await Promise.all(annFiles.map(uploadChatFile))).filter(Boolean);
 
   const { error } = await sb.from('announcements').insert({
-    author_id:   currentProfile.id,
+    author_id: currentProfile.id,
     title, body,
-    category:    cat,
+    category: cat,
     attachments,
   });
 
@@ -733,8 +733,8 @@ function closeRequestModal() {
 
 async function submitRequest() {
   const senseiId = document.getElementById('reqTeacherSel').value;
-  const body     = document.getElementById('reqBody').value.trim();
-  const err      = document.getElementById('reqError');
+  const body = document.getElementById('reqBody').value.trim();
+  const err = document.getElementById('reqError');
   err.textContent = '';
 
   if (!body) { err.textContent = 'リクエスト内容を入力してください'; return; }
@@ -744,7 +744,7 @@ async function submitRequest() {
   btn.disabled = true; btn.textContent = '送信中...';
 
   const { error } = await sb.from('requests').insert({
-    seito_id:  currentProfile.id,
+    seito_id: currentProfile.id,
     sensei_id: senseiId,
     body,
   });
@@ -807,7 +807,7 @@ function renderConvList() {
     return;
   }
   conversations.forEach(conv => {
-    const pid     = conv.participant_a_id === currentProfile.id ? conv.participant_b_id : conv.participant_a_id;
+    const pid = conv.participant_a_id === currentProfile.id ? conv.participant_b_id : conv.participant_a_id;
     const partner = getProfile(pid);
     if (!partner) return;
     const item = document.createElement('div');
@@ -899,7 +899,7 @@ async function renderPermissionsPanel() {
       pairPerms.forEach(p => {
         const pA = getProfile(p.seito_a_id), pB = getProfile(p.seito_b_id);
         const item = document.createElement('div'); item.className = 'perm-item';
-        item.innerHTML = `<div class="perm-item-info">${escHtml(pA?.name||'?')} ↔ ${escHtml(pB?.name||'?')}</div>`;
+        item.innerHTML = `<div class="perm-item-info">${escHtml(pA?.name || '?')} ↔ ${escHtml(pB?.name || '?')}</div>`;
         const rBtn = document.createElement('button'); rBtn.className = 'perm-revoke-btn'; rBtn.textContent = '取り消す';
         rBtn.addEventListener('click', async () => {
           await sb.from('chat_permissions').delete().eq('id', p.id);
@@ -936,8 +936,8 @@ function setupNewChatModal() {
 
 async function openNewChatModal() {
   const modal = document.getElementById('newChatModal');
-  const list  = document.getElementById('userPickList');
-  const hint  = document.getElementById('newChatHint');
+  const list = document.getElementById('userPickList');
+  const hint = document.getElementById('newChatHint');
   list.innerHTML = '<p class="empty-hint">読み込み中...</p>';
   hint.textContent = currentProfile.role === 'sensei' ? '全ユーザーとチャットできます' : '先生または許可された生徒を選んでください';
   modal.classList.remove('hidden');
@@ -991,7 +991,7 @@ async function openConversation(convId, partner) {
   document.getElementById('chatPanel').classList.remove('hidden');
   const av = document.getElementById('chatPartnerAvatar');
   av.style.background = partner.color; av.textContent = partner.name[0].toUpperCase();
-  setText('chatPartnerName',   partner.name);
+  setText('chatPartnerName', partner.name);
   setText('chatPartnerHandle', '@' + partner.handle);
   await loadMessages(convId);
   subscribeToMessages(convId);
@@ -1019,12 +1019,12 @@ function buildMsgRow(msg) {
   const row = document.createElement('div');
   row.className = 'msg-row ' + (isMine ? 'mine' : 'theirs');
   if (!isMine && sender) row.appendChild(makeAvatarEl(sender, 'xs'));
-  const inner  = document.createElement('div');
+  const inner = document.createElement('div');
   const bubble = document.createElement('div');
   bubble.className = 'msg-bubble';
   if (msg.body?.trim()) {
     const p = document.createElement('p');
-    p.innerHTML = escHtml(msg.body).replace(/\n/g,'<br>');
+    p.innerHTML = escHtml(msg.body).replace(/\n/g, '<br>');
     bubble.appendChild(p);
   }
   const atts = msg.attachments || [];
@@ -1058,7 +1058,7 @@ function buildAttachEl(att) {
   if (att.type === 'pdf') {
     const a = document.createElement('a');
     a.className = 'attach-pdf'; a.href = att.url; a.target = '_blank'; a.rel = 'noopener noreferrer';
-    a.innerHTML = `<span class="attach-pdf-icon">📄</span><span>${escHtml(att.name||'PDF')}</span>`;
+    a.innerHTML = `<span class="attach-pdf-icon">📄</span><span>${escHtml(att.name || 'PDF')}</span>`;
     return a;
   }
   const a = document.createElement('a');
@@ -1074,8 +1074,8 @@ function dateDivider(text) {
 }
 
 function setupChatInput() {
-  const fi  = document.getElementById('chatFileInput');
-  const ta  = document.getElementById('chatInput');
+  const fi = document.getElementById('chatFileInput');
+  const ta = document.getElementById('chatInput');
   const btn = document.getElementById('sendBtn');
   fi?.addEventListener('change', () => {
     Array.from(fi.files).forEach(f => pendingFiles.push(f));
@@ -1089,7 +1089,7 @@ function setupChatInput() {
 }
 
 function updateSendBtn() {
-  const ta  = document.getElementById('chatInput');
+  const ta = document.getElementById('chatInput');
   const btn = document.getElementById('sendBtn');
   if (!btn) return;
   btn.disabled = !activeConvId || (!ta?.value.trim() && !pendingFiles.length);
@@ -1135,7 +1135,7 @@ function buildPreviewChip(file, idx, arr, rerender) {
 
 async function sendMessage() {
   if (!activeConvId) return;
-  const ta  = document.getElementById('chatInput');
+  const ta = document.getElementById('chatInput');
   const btn = document.getElementById('sendBtn');
   const body = ta.value.trim();
   const files = [...pendingFiles];
@@ -1153,7 +1153,7 @@ async function sendMessage() {
 }
 
 async function uploadChatFile(file) {
-  const ext  = file.name.split('.').pop().toLowerCase();
+  const ext = file.name.split('.').pop().toLowerCase();
   const path = `${currentUser.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
   const { error } = await sb.storage.from('chat-files').upload(path, file, { upsert: false });
   if (error) { showToast('アップロード失敗: ' + file.name); return null; }
@@ -1178,10 +1178,10 @@ function appendMessage(msg) {
 // ============================================================
 //  NOTICE BOARD
 // ============================================================
-let nbPosts   = [];
-let nbFilter  = 'all';
-let nbEditId  = null;
-let nbFiles   = [];
+let nbPosts = [];
+let nbFilter = 'all';
+let nbEditId = null;
+let nbFiles = [];
 let nbChannel = null;
 
 async function initNoticeBoard() {
@@ -1242,7 +1242,7 @@ function renderNBCards() {
 
 function buildNBCard(p) {
   const author = p.profiles || getProfile(p.author_id) || {};
-  const card   = document.createElement('div');
+  const card = document.createElement('div');
   card.className = 'nb-card'; card.dataset.nbId = p.id;
 
   const stripe = document.createElement('div');
@@ -1356,7 +1356,7 @@ function openNBModalNew() {
   nbEditId = null; nbFiles = [];
   setText('nbModalTitle', '掲示板に投稿');
   document.getElementById('nbTitle').value = '';
-  document.getElementById('nbBody').value  = '';
+  document.getElementById('nbBody').value = '';
   document.getElementById('nbPinned').checked = false;
   document.getElementById('nbError').textContent = '';
   document.querySelectorAll('.nb-color-btn').forEach(b => b.classList.remove('active'));
@@ -1370,8 +1370,8 @@ function openNBModalNew() {
 function openNBModalEdit(p) {
   nbEditId = p.id; nbFiles = [];
   setText('nbModalTitle', '投稿を編集');
-  document.getElementById('nbTitle').value    = p.title;
-  document.getElementById('nbBody').value     = p.body || '';
+  document.getElementById('nbTitle').value = p.title;
+  document.getElementById('nbBody').value = p.body || '';
   document.getElementById('nbPinned').checked = p.pinned;
   document.getElementById('nbError').textContent = '';
   document.querySelectorAll('.nb-color-btn').forEach(b => b.classList.toggle('active', b.dataset.color === p.color));
@@ -1393,11 +1393,11 @@ function renderNBPreview() {
 }
 
 async function submitNBPost() {
-  const title  = document.getElementById('nbTitle').value.trim();
-  const body   = document.getElementById('nbBody').value.trim();
+  const title = document.getElementById('nbTitle').value.trim();
+  const body = document.getElementById('nbBody').value.trim();
   const pinned = document.getElementById('nbPinned').checked;
-  const color  = document.querySelector('.nb-color-btn.active')?.dataset.color || '#1d9bf0';
-  const err    = document.getElementById('nbError');
+  const color = document.querySelector('.nb-color-btn.active')?.dataset.color || '#1d9bf0';
+  const err = document.getElementById('nbError');
   err.textContent = '';
   if (!title) { err.textContent = 'タイトルを入力してください'; return; }
 
@@ -1430,9 +1430,9 @@ async function submitNBPost() {
 // ============================================================
 //  GOALS + COUNTDOWN
 // ============================================================
-let myGoal       = null;    // current user's goal row
+let myGoal = null;    // current user's goal row
 let goalsChannel = null;
-let cdInterval   = null;
+let cdInterval = null;
 
 // ── Exam dates (updated every year; 2026/2027 schedule) ──
 const EXAM_DATES = {
@@ -1484,16 +1484,16 @@ function renderCountdown() {
 
 function renderCDCard(type, exam) {
   const prefix = type === 'hs' ? 'cdHS' : 'cdUni';
-  const nameEl  = document.getElementById(prefix + 'Name');
-  const daysEl  = document.getElementById(prefix + 'Days');
+  const nameEl = document.getElementById(prefix + 'Name');
+  const daysEl = document.getElementById(prefix + 'Days');
   const hoursEl = document.getElementById(prefix + 'Hours');
-  const minsEl  = document.getElementById(prefix + 'Mins');
-  const dateEl  = document.getElementById(prefix + 'Date');
+  const minsEl = document.getElementById(prefix + 'Mins');
+  const dateEl = document.getElementById(prefix + 'Date');
   if (!daysEl) return;
 
   if (nameEl) nameEl.textContent = exam.name;
 
-  const now  = Date.now();
+  const now = Date.now();
   const diff = exam.date.getTime() - now;
 
   if (diff <= 0) {
@@ -1502,14 +1502,14 @@ function renderCDCard(type, exam) {
     return;
   }
 
-  const totalMins  = Math.floor(diff / 60000);
-  const days       = Math.floor(totalMins / 1440);
-  const hours      = Math.floor((totalMins % 1440) / 60);
-  const mins       = totalMins % 60;
+  const totalMins = Math.floor(diff / 60000);
+  const days = Math.floor(totalMins / 1440);
+  const hours = Math.floor((totalMins % 1440) / 60);
+  const mins = totalMins % 60;
 
-  daysEl.textContent  = String(days);
+  daysEl.textContent = String(days);
   hoursEl.textContent = String(hours).padStart(2, '0');
-  minsEl.textContent  = String(mins).padStart(2, '0');
+  minsEl.textContent = String(mins).padStart(2, '0');
   if (dateEl) {
     dateEl.textContent = exam.date.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' });
   }
@@ -1517,10 +1517,10 @@ function renderCDCard(type, exam) {
 
 // ── My goal UI ──
 function renderMyGoalUI() {
-  const ta        = document.getElementById('myGoalText');
-  const pubCheck  = document.getElementById('myGoalPublic');
-  const checkBtn  = document.getElementById('goalCheckBtn');
-  const streakEl  = document.getElementById('myGoalStreak');
+  const ta = document.getElementById('myGoalText');
+  const pubCheck = document.getElementById('myGoalPublic');
+  const checkBtn = document.getElementById('goalCheckBtn');
+  const streakEl = document.getElementById('myGoalStreak');
   if (!ta) return;
 
   if (myGoal) {
@@ -1544,39 +1544,106 @@ function renderMyGoalUI() {
 }
 
 function setupGoalActions() {
-  const saveBtn  = document.getElementById('goalSaveBtn');
+  const saveBtn = document.getElementById('goalSaveBtn');
   const checkBtn = document.getElementById('goalCheckBtn');
   if (!saveBtn || !checkBtn) return;
 
   saveBtn.addEventListener('click', async () => {
-    const text     = document.getElementById('myGoalText').value.trim();
+
+    const text = document.getElementById('myGoalText').value.trim();
     const isPublic = document.getElementById('myGoalPublic').checked;
-    if (!text) { showToast('目標を入力してください'); return; }
 
-    saveBtn.disabled = true; saveBtn.textContent = '保存中...';
-
-    if (myGoal) {
-      const { data, error } = await sb.from('goals').update({
-        goal_text: text, is_public: isPublic, updated_at: new Date().toISOString(),
-      }).eq('user_id', currentProfile.id).select().single();
-      if (!error && data) myGoal = data;
-    } else {
-      const { data, error } = await sb.from('goals').insert({
-        user_id: currentProfile.id, goal_text: text, is_public: isPublic,
-      }).select().single();
-      if (!error && data) myGoal = data;
+    if (!text) {
+      showToast('目標を入力してください');
+      return;
     }
 
-    saveBtn.disabled = false; saveBtn.textContent = '保存';
-    showToast('目標を保存しました ✅');
-    renderMyGoalUI();
+    saveBtn.disabled = true;
+    saveBtn.textContent = '保存中...';
+
+    let result;
+
+    try {
+
+      if (myGoal) {
+
+        result = await sb
+          .from('goals')
+          .update({
+            goal_text: text,
+            is_public: isPublic,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', currentProfile.id)
+          .select()
+          .single();
+
+      } else {
+
+        result = await sb
+          .from('goals')
+          .insert({
+            user_id: currentProfile.id,
+            goal_text: text,
+            is_public: isPublic,
+            checked: false,
+            checked_at: null,
+            streak: 0,
+            updated_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+      }
+
+      if (result.error) {
+        console.error('GOAL SAVE ERROR:', result.error);
+
+        showToast(
+          '目標の保存に失敗しました: ' +
+          result.error.message
+        );
+
+        return;
+      }
+
+      if (!result.data) {
+        showToast('目標を保存できませんでした');
+        return;
+      }
+
+      myGoal = result.data;
+
+      renderMyGoalUI();
+
+      if (isPublic) {
+        showToast('🌏 目標をみんなに公開しました！');
+      } else {
+        showToast('🔒 目標を保存しました');
+      }
+
+      /* 公開目標一覧も更新 */
+      await loadSharedGoals();
+
+    } catch (err) {
+
+      console.error('GOAL SAVE EXCEPTION:', err);
+
+      showToast('目標の保存中にエラーが発生しました');
+
+    } finally {
+
+      saveBtn.disabled = false;
+      saveBtn.textContent = '保存';
+
+    }
+
   });
 
   checkBtn.addEventListener('click', async () => {
     const todayStr = new Date().toISOString().slice(0, 10);
     if (myGoal?.checked_at === todayStr) { showToast('今日はすでに達成済みです！'); return; }
 
-    const text     = document.getElementById('myGoalText').value.trim();
+    const text = document.getElementById('myGoalText').value.trim();
     const isPublic = document.getElementById('myGoalPublic').checked;
     if (!text) { showToast('先に目標を入力・保存してください'); return; }
 
@@ -1587,12 +1654,12 @@ function setupGoalActions() {
     const newStreak = (myGoal?.checked_at === yStr ? (myGoal?.streak || 0) : 0) + 1;
 
     const payload = {
-      user_id:    currentProfile.id,
-      goal_text:  text,
-      is_public:  isPublic,
-      checked:    true,
+      user_id: currentProfile.id,
+      goal_text: text,
+      is_public: isPublic,
+      checked: true,
       checked_at: todayStr,
-      streak:     newStreak,
+      streak: newStreak,
       updated_at: new Date().toISOString(),
     };
 
@@ -1615,7 +1682,7 @@ function setupGoalsTabBar() {
       document.querySelectorAll('.goals-tab').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       const tab = btn.dataset.gtab;
-      document.getElementById('goalsMinePanel')?.classList.toggle('hidden',   tab !== 'mine');
+      document.getElementById('goalsMinePanel')?.classList.toggle('hidden', tab !== 'mine');
       document.getElementById('goalsSharedPanel')?.classList.toggle('hidden', tab !== 'shared');
       if (tab === 'shared') await loadSharedGoals();
     });
@@ -1629,7 +1696,7 @@ function setupGoalsTabBar() {
       // mirror to main tab
       const tab = btn.dataset.gtab;
       document.querySelectorAll('.goals-tab').forEach(b => b.classList.toggle('active', b.dataset.gtab === tab));
-      document.getElementById('goalsMinePanel')?.classList.toggle('hidden',   tab !== 'mine');
+      document.getElementById('goalsMinePanel')?.classList.toggle('hidden', tab !== 'mine');
       document.getElementById('goalsSharedPanel')?.classList.toggle('hidden', tab !== 'shared');
       if (tab === 'shared') await loadSharedGoals();
     });
@@ -1689,15 +1756,15 @@ async function loadSharedGoals() {
 }
 
 function updateGoalsSidebarSummary() {
-  const streakEl  = document.getElementById('goalsStreak');
+  const streakEl = document.getElementById('goalsStreak');
   const checkedEl = document.getElementById('goalsCheckedToday');
   if (!streakEl) return;
 
-  const streak   = myGoal?.streak || 0;
+  const streak = myGoal?.streak || 0;
   const todayStr = new Date().toISOString().slice(0, 10);
-  const checked  = myGoal?.checked_at === todayStr;
+  const checked = myGoal?.checked_at === todayStr;
 
-  streakEl.textContent  = `🔥 ${streak}日連続`;
+  streakEl.textContent = `🔥 ${streak}日連続`;
   if (checkedEl) checkedEl.textContent = checked ? '✅ 今日達成済み' : myGoal?.goal_text ? '⭕ まだ未達成' : '目標を設定しよう';
 }
 
@@ -1705,19 +1772,19 @@ function updateGoalsSidebarSummary() {
 //  SUBJECTS (教科リソース)
 // ============================================================
 const SUBJECTS = {
-  math:     { label: '数学', icon: '📐', color: '#1d9bf0' },
+  math: { label: '数学', icon: '📐', color: '#1d9bf0' },
   japanese: { label: '国語', icon: '📖', color: '#f97316' },
-  english:  { label: '英語', icon: '🌐', color: '#10b981' },
-  science:  { label: '理科', icon: '🔬', color: '#a855f7' },
-  social:   { label: '社会', icon: '🗾', color: '#f59e0b' },
+  english: { label: '英語', icon: '🌐', color: '#10b981' },
+  science: { label: '理科', icon: '🔬', color: '#a855f7' },
+  social: { label: '社会', icon: '🗾', color: '#f59e0b' },
 };
 
-let srResources  = [];
-let srSubject    = 'math';
-let srLevel      = 'jhs';
+let srResources = [];
+let srSubject = 'math';
+let srLevel = 'jhs';
 let srTypeFilter = 'all';
-let srEditId     = null;
-let srChannel    = null;
+let srEditId = null;
+let srChannel = null;
 
 async function initSubjects() {
   await loadSRResources();
@@ -1780,11 +1847,11 @@ function setupSRTypeButtons() {
 function updateSRHeader() {
   const subj = SUBJECTS[srSubject];
   const levelLabel = srLevel === 'jhs' ? '中学校' : '高校';
-  const iconEl  = document.getElementById('subjCurrentIcon');
-  const nameEl  = document.getElementById('subjCurrentName');
+  const iconEl = document.getElementById('subjCurrentIcon');
+  const nameEl = document.getElementById('subjCurrentName');
   const levelEl = document.getElementById('subjCurrentLevel');
-  if (iconEl)  iconEl.textContent  = subj?.icon  || '';
-  if (nameEl)  nameEl.textContent  = subj?.label || '';
+  if (iconEl) iconEl.textContent = subj?.icon || '';
+  if (nameEl) nameEl.textContent = subj?.label || '';
   if (levelEl) levelEl.textContent = levelLabel;
 }
 
@@ -1794,9 +1861,9 @@ function renderSRGrid() {
   grid.innerHTML = '';
 
   const filtered = srResources.filter(r => {
-    const matchSubj  = r.subject === srSubject;
+    const matchSubj = r.subject === srSubject;
     const matchLevel = r.level === srLevel || r.level === 'both';
-    const matchType  = srTypeFilter === 'all' || r.resource_type === srTypeFilter;
+    const matchType = srTypeFilter === 'all' || r.resource_type === srTypeFilter;
     return matchSubj && matchLevel && matchType;
   });
 
@@ -1814,7 +1881,7 @@ function buildSRCard(r) {
   card.appendChild(Object.assign(document.createElement('div'), { className: 'sr-card-stripe' }));
 
   const body = document.createElement('div'); body.className = 'sr-card-body';
-  const top  = document.createElement('div'); top.className  = 'sr-card-top';
+  const top = document.createElement('div'); top.className = 'sr-card-top';
   const badge = document.createElement('span');
   badge.className = `sr-type-badge ${r.resource_type}`;
   badge.textContent = r.resource_type === 'link' ? '🔗 サイト' : '💡 ヒント';
@@ -1832,7 +1899,7 @@ function buildSRCard(r) {
   card.appendChild(body);
 
   const footer = document.createElement('div'); footer.className = 'sr-card-footer';
-  const left   = document.createElement('div');
+  const left = document.createElement('div');
   left.style.cssText = 'display:flex;align-items:center;gap:8px;flex-wrap:wrap';
 
   if (r.resource_type === 'link' && r.url) {
@@ -1903,9 +1970,9 @@ function setupSRModal() {
 function openSRModalNew() {
   srEditId = null;
   setText('srModalTitle', 'リソースを追加');
-  ['srTitle','srUrl','srTip','srDesc'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['srTitle', 'srUrl', 'srTip', 'srDesc'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   document.getElementById('srSubject').value = srSubject;
-  document.getElementById('srLevel').value   = srLevel;
+  document.getElementById('srLevel').value = srLevel;
   document.getElementById('srError').textContent = '';
   document.querySelectorAll('.cat-btn[data-srtype]').forEach(b => b.classList.toggle('active', b.dataset.srtype === 'link'));
   document.getElementById('srUrlField')?.classList.remove('hidden');
@@ -1918,12 +1985,12 @@ function openSRModalNew() {
 function openSRModalEdit(r) {
   srEditId = r.id;
   setText('srModalTitle', 'リソースを編集');
-  document.getElementById('srTitle').value   = r.title;
-  document.getElementById('srUrl').value     = r.url || '';
-  document.getElementById('srTip').value     = r.tip || '';
-  document.getElementById('srDesc').value    = r.description || '';
+  document.getElementById('srTitle').value = r.title;
+  document.getElementById('srUrl').value = r.url || '';
+  document.getElementById('srTip').value = r.tip || '';
+  document.getElementById('srDesc').value = r.description || '';
   document.getElementById('srSubject').value = r.subject;
-  document.getElementById('srLevel').value   = r.level;
+  document.getElementById('srLevel').value = r.level;
   document.getElementById('srError').textContent = '';
   const isLink = r.resource_type === 'link';
   document.querySelectorAll('.cat-btn[data-srtype]').forEach(b => b.classList.toggle('active', b.dataset.srtype === r.resource_type));
@@ -1937,18 +2004,18 @@ function openSRModalEdit(r) {
 function closeSRModal() { document.getElementById('srModal').classList.add('hidden'); srEditId = null; }
 
 async function submitSRResource() {
-  const title   = document.getElementById('srTitle').value.trim();
-  const url     = document.getElementById('srUrl').value.trim();
-  const tip     = document.getElementById('srTip').value.trim();
-  const desc    = document.getElementById('srDesc').value.trim();
+  const title = document.getElementById('srTitle').value.trim();
+  const url = document.getElementById('srUrl').value.trim();
+  const tip = document.getElementById('srTip').value.trim();
+  const desc = document.getElementById('srDesc').value.trim();
   const subject = document.getElementById('srSubject').value;
-  const level   = document.getElementById('srLevel').value;
-  const type    = document.querySelector('.cat-btn[data-srtype].active')?.dataset.srtype || 'link';
-  const err     = document.getElementById('srError');
+  const level = document.getElementById('srLevel').value;
+  const type = document.querySelector('.cat-btn[data-srtype].active')?.dataset.srtype || 'link';
+  const err = document.getElementById('srError');
   err.textContent = '';
   if (!title) { err.textContent = 'タイトルを入力してください'; return; }
   if (type === 'link' && !url) { err.textContent = 'URLを入力してください'; return; }
-  if (type === 'tip'  && !tip) { err.textContent = 'ヒント内容を入力してください'; return; }
+  if (type === 'tip' && !tip) { err.textContent = 'ヒント内容を入力してください'; return; }
 
   const btn = document.getElementById('srSubmitBtn');
   btn.disabled = true; btn.textContent = '保存中...';
@@ -1974,179 +2041,179 @@ async function submitSRResource() {
 //  PROFILE MODAL + AVATAR
 // ============================================================
 const AVATAR_EMOJIS = [
-  '😀','😁','😂','🥰','😎','🤔','🥳','😴','🤯','😇',
-  '🐱','🐶','🦊','🐸','🦁','🐼','🦄','🐙','🦋','🐨',
-  '🐯','🦅','🦉','🐧','🦜','🐬','🦈','🐉','🌸','🌊',
-  '⚡','🔥','💧','🌙','⭐','🌈','☀️','❄️','🎮','🎨',
-  '🎵','📸','💻','🚀','🎯','🏆','💎','🎲','🍎','🍕',
-  '🍜','🍣','☕','🎂','🍓','🌮','🏀','⚽','🎾','🏊',
-  '🤸','🌺','🌻','🌹','🍀','🌵','🌴','🌿','🍁','🌾',
-  '🦸','🧙','👨‍🏫','🎓','👩‍💻','👨‍🔬','👩‍🎨','🧑‍🚀','💪','👀',
+  '😀', '😁', '😂', '🥰', '😎', '🤔', '🥳', '😴', '🤯', '😇',
+  '🐱', '🐶', '🦊', '🐸', '🦁', '🐼', '🦄', '🐙', '🦋', '🐨',
+  '🐯', '🦅', '🦉', '🐧', '🦜', '🐬', '🦈', '🐉', '🌸', '🌊',
+  '⚡', '🔥', '💧', '🌙', '⭐', '🌈', '☀️', '❄️', '🎮', '🎨',
+  '🎵', '📸', '💻', '🚀', '🎯', '🏆', '💎', '🎲', '🍎', '🍕',
+  '🍜', '🍣', '☕', '🎂', '🍓', '🌮', '🏀', '⚽', '🎾', '🏊',
+  '🤸', '🌺', '🌻', '🌹', '🍀', '🌵', '🌴', '🌿', '🍁', '🌾',
+  '🦸', '🧙', '👨‍🏫', '🎓', '👩‍💻', '👨‍🔬', '👩‍🎨', '🧑‍🚀', '💪', '👀',
 ];
 const AVATAR_COLORS = [
-  '#1d9bf0','#7c3aed','#10b981','#f59e0b','#ef4444',
-  '#ec4899','#06b6d4','#8b5cf6','#f97316','#14b8a6',
-  '#6366f1','#84cc16','#d946ef','#0ea5e9','#a78bfa',
-  '#fb923c','#34d399','#fbbf24','#f43f5e','#38bdf8',
+  '#1d9bf0', '#7c3aed', '#10b981', '#f59e0b', '#ef4444',
+  '#ec4899', '#06b6d4', '#8b5cf6', '#f97316', '#14b8a6',
+  '#6366f1', '#84cc16', '#d946ef', '#0ea5e9', '#a78bfa',
+  '#fb923c', '#34d399', '#fbbf24', '#f43f5e', '#38bdf8',
 ];
-let avatarNewFile=null,avatarNewEmoji=null,avatarNewColor=null,avatarNewPhotoURL=null,avatarMode='color';
+let avatarNewFile = null, avatarNewEmoji = null, avatarNewColor = null, avatarNewPhotoURL = null, avatarMode = 'color';
 
-function setupProfileModal(){
-  document.getElementById('sidebarUser')?.addEventListener('click',openProfileModal);
-  document.getElementById('closeProfileModal')?.addEventListener('click',closeProfileModal);
-  document.getElementById('profileModal')?.addEventListener('click',e=>{if(e.target===e.currentTarget)closeProfileModal();});
-  document.querySelectorAll('.avatar-tab').forEach(btn=>{
-    btn.addEventListener('click',()=>{
-      document.querySelectorAll('.avatar-tab').forEach(b=>b.classList.remove('active'));
+function setupProfileModal() {
+  document.getElementById('sidebarUser')?.addEventListener('click', openProfileModal);
+  document.getElementById('closeProfileModal')?.addEventListener('click', closeProfileModal);
+  document.getElementById('profileModal')?.addEventListener('click', e => { if (e.target === e.currentTarget) closeProfileModal(); });
+  document.querySelectorAll('.avatar-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.avatar-tab').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      avatarMode=btn.dataset.atab;
-      document.getElementById('avatarTabPhoto')?.classList.toggle('hidden',avatarMode!=='photo');
-      document.getElementById('avatarTabEmoji')?.classList.toggle('hidden',avatarMode!=='emoji');
-      document.getElementById('avatarTabColor')?.classList.toggle('hidden',avatarMode!=='color');
+      avatarMode = btn.dataset.atab;
+      document.getElementById('avatarTabPhoto')?.classList.toggle('hidden', avatarMode !== 'photo');
+      document.getElementById('avatarTabEmoji')?.classList.toggle('hidden', avatarMode !== 'emoji');
+      document.getElementById('avatarTabColor')?.classList.toggle('hidden', avatarMode !== 'color');
     });
   });
-  document.getElementById('avatarFileInput')?.addEventListener('change',e=>{
-    const file=e.target.files[0]; if(!file)return;
-    if(file.size>5*1024*1024){showToast('ファイルは5MB以下にしてください');return;}
-    avatarNewFile=file; avatarNewPhotoURL=URL.createObjectURL(file);
+  document.getElementById('avatarFileInput')?.addEventListener('change', e => {
+    const file = e.target.files[0]; if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { showToast('ファイルは5MB以下にしてください'); return; }
+    avatarNewFile = file; avatarNewPhotoURL = URL.createObjectURL(file);
     document.getElementById('avatarPhotoPreviewWrap').classList.remove('hidden');
     document.getElementById('avatarUploadDrop').classList.add('hidden');
-    document.getElementById('avatarPhotoPreview').src=avatarNewPhotoURL;
+    document.getElementById('avatarPhotoPreview').src = avatarNewPhotoURL;
     updateProfilePreview();
   });
-  document.getElementById('avatarRemovePhoto')?.addEventListener('click',()=>{
-    avatarNewFile=null; avatarNewPhotoURL=null;
+  document.getElementById('avatarRemovePhoto')?.addEventListener('click', () => {
+    avatarNewFile = null; avatarNewPhotoURL = null;
     document.getElementById('avatarPhotoPreviewWrap').classList.add('hidden');
     document.getElementById('avatarUploadDrop').classList.remove('hidden');
-    document.getElementById('avatarFileInput').value='';
+    document.getElementById('avatarFileInput').value = '';
     updateProfilePreview();
   });
   buildEmojiGrid();
-  document.getElementById('avatarEmojiSearch')?.addEventListener('input',e=>buildEmojiGrid(e.target.value.trim()));
+  document.getElementById('avatarEmojiSearch')?.addEventListener('input', e => buildEmojiGrid(e.target.value.trim()));
   buildColorSwatches();
-  document.getElementById('avatarColorCustom')?.addEventListener('input',e=>{
-    avatarNewColor=e.target.value;
-    document.querySelectorAll('.avatar-color-swatch').forEach(s=>s.classList.remove('selected'));
+  document.getElementById('avatarColorCustom')?.addEventListener('input', e => {
+    avatarNewColor = e.target.value;
+    document.querySelectorAll('.avatar-color-swatch').forEach(s => s.classList.remove('selected'));
     updateProfilePreview();
   });
-  document.getElementById('saveProfileBtn')?.addEventListener('click',saveProfile);
+  document.getElementById('saveProfileBtn')?.addEventListener('click', saveProfile);
 }
 
-function buildEmojiGrid(filter=''){
-  const grid=document.getElementById('avatarEmojiGrid'); if(!grid)return;
-  grid.innerHTML='';
-  const list=filter?AVATAR_EMOJIS.filter(e=>e.includes(filter)):AVATAR_EMOJIS;
-  if(!list.length){grid.innerHTML='<p style="color:var(--text2);font-size:.78rem;padding:8px;grid-column:1/-1">見つかりません</p>';return;}
-  list.forEach(emoji=>{
-    const btn=document.createElement('button'); btn.className='avatar-emoji-btn'; btn.textContent=emoji;
-    if(emoji===(avatarNewEmoji||currentProfile?.avatar_icon))btn.classList.add('selected');
-    btn.addEventListener('click',()=>{
-      avatarNewEmoji=emoji; avatarMode='emoji';
-      document.querySelectorAll('.avatar-emoji-btn').forEach(b=>b.classList.remove('selected'));
+function buildEmojiGrid(filter = '') {
+  const grid = document.getElementById('avatarEmojiGrid'); if (!grid) return;
+  grid.innerHTML = '';
+  const list = filter ? AVATAR_EMOJIS.filter(e => e.includes(filter)) : AVATAR_EMOJIS;
+  if (!list.length) { grid.innerHTML = '<p style="color:var(--text2);font-size:.78rem;padding:8px;grid-column:1/-1">見つかりません</p>'; return; }
+  list.forEach(emoji => {
+    const btn = document.createElement('button'); btn.className = 'avatar-emoji-btn'; btn.textContent = emoji;
+    if (emoji === (avatarNewEmoji || currentProfile?.avatar_icon)) btn.classList.add('selected');
+    btn.addEventListener('click', () => {
+      avatarNewEmoji = emoji; avatarMode = 'emoji';
+      document.querySelectorAll('.avatar-emoji-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected'); updateProfilePreview();
     });
     grid.appendChild(btn);
   });
 }
 
-function buildColorSwatches(){
-  const wrap=document.getElementById('avatarColorSwatches'); if(!wrap)return;
-  wrap.innerHTML='';
-  AVATAR_COLORS.forEach(color=>{
-    const sw=document.createElement('button'); sw.className='avatar-color-swatch';
-    sw.style.background=color; sw.dataset.color=color;
-    if(color===(avatarNewColor||currentProfile?.color))sw.classList.add('selected');
-    sw.addEventListener('click',()=>{
-      avatarNewColor=color; avatarMode='color';
-      document.querySelectorAll('.avatar-color-swatch').forEach(s=>s.classList.remove('selected'));
+function buildColorSwatches() {
+  const wrap = document.getElementById('avatarColorSwatches'); if (!wrap) return;
+  wrap.innerHTML = '';
+  AVATAR_COLORS.forEach(color => {
+    const sw = document.createElement('button'); sw.className = 'avatar-color-swatch';
+    sw.style.background = color; sw.dataset.color = color;
+    if (color === (avatarNewColor || currentProfile?.color)) sw.classList.add('selected');
+    sw.addEventListener('click', () => {
+      avatarNewColor = color; avatarMode = 'color';
+      document.querySelectorAll('.avatar-color-swatch').forEach(s => s.classList.remove('selected'));
       sw.classList.add('selected');
-      document.getElementById('avatarColorCustom').value=color;
+      document.getElementById('avatarColorCustom').value = color;
       updateProfilePreview();
     });
     wrap.appendChild(sw);
   });
 }
 
-function updateProfilePreview(){
-  const prev=document.getElementById('profileAvatarPreview'); if(!prev)return;
-  prev.innerHTML=''; prev.style.background='';
-  if(avatarMode==='photo'&&avatarNewPhotoURL){
-    const img=document.createElement('img'); img.src=avatarNewPhotoURL; img.alt='preview'; prev.appendChild(img);
-  } else if(avatarMode==='emoji'&&avatarNewEmoji){
-    prev.textContent=avatarNewEmoji; prev.style.background='var(--bg3)';
+function updateProfilePreview() {
+  const prev = document.getElementById('profileAvatarPreview'); if (!prev) return;
+  prev.innerHTML = ''; prev.style.background = '';
+  if (avatarMode === 'photo' && avatarNewPhotoURL) {
+    const img = document.createElement('img'); img.src = avatarNewPhotoURL; img.alt = 'preview'; prev.appendChild(img);
+  } else if (avatarMode === 'emoji' && avatarNewEmoji) {
+    prev.textContent = avatarNewEmoji; prev.style.background = 'var(--bg3)';
   } else {
-    const color=avatarNewColor||currentProfile?.color||'#1d9bf0';
-    prev.style.background=color; prev.textContent=(currentProfile?.name||'?')[0].toUpperCase();
+    const color = avatarNewColor || currentProfile?.color || '#1d9bf0';
+    prev.style.background = color; prev.textContent = (currentProfile?.name || '?')[0].toUpperCase();
   }
 }
 
-function openProfileModal(){
-  avatarNewFile=null; avatarNewEmoji=currentProfile.avatar_icon||null;
-  avatarNewColor=currentProfile.color||'#1d9bf0'; avatarNewPhotoURL=null;
-  avatarMode=currentProfile.avatar_url?'photo':currentProfile.avatar_icon?'emoji':'color';
-  document.getElementById('profileNameInput').value=currentProfile.name||'';
-  document.getElementById('profileBioInput').value=currentProfile.bio||'';
-  document.getElementById('profileError').textContent='';
-  document.querySelectorAll('.avatar-tab').forEach(b=>b.classList.toggle('active',b.dataset.atab===avatarMode));
-  document.getElementById('avatarTabPhoto')?.classList.toggle('hidden',avatarMode!=='photo');
-  document.getElementById('avatarTabEmoji')?.classList.toggle('hidden',avatarMode!=='emoji');
-  document.getElementById('avatarTabColor')?.classList.toggle('hidden',avatarMode!=='color');
-  if(currentProfile.avatar_url){
-    avatarNewPhotoURL=currentProfile.avatar_url;
-    document.getElementById('avatarPhotoPreview').src=currentProfile.avatar_url;
+function openProfileModal() {
+  avatarNewFile = null; avatarNewEmoji = currentProfile.avatar_icon || null;
+  avatarNewColor = currentProfile.color || '#1d9bf0'; avatarNewPhotoURL = null;
+  avatarMode = currentProfile.avatar_url ? 'photo' : currentProfile.avatar_icon ? 'emoji' : 'color';
+  document.getElementById('profileNameInput').value = currentProfile.name || '';
+  document.getElementById('profileBioInput').value = currentProfile.bio || '';
+  document.getElementById('profileError').textContent = '';
+  document.querySelectorAll('.avatar-tab').forEach(b => b.classList.toggle('active', b.dataset.atab === avatarMode));
+  document.getElementById('avatarTabPhoto')?.classList.toggle('hidden', avatarMode !== 'photo');
+  document.getElementById('avatarTabEmoji')?.classList.toggle('hidden', avatarMode !== 'emoji');
+  document.getElementById('avatarTabColor')?.classList.toggle('hidden', avatarMode !== 'color');
+  if (currentProfile.avatar_url) {
+    avatarNewPhotoURL = currentProfile.avatar_url;
+    document.getElementById('avatarPhotoPreview').src = currentProfile.avatar_url;
     document.getElementById('avatarPhotoPreviewWrap').classList.remove('hidden');
     document.getElementById('avatarUploadDrop').classList.add('hidden');
   } else {
     document.getElementById('avatarPhotoPreviewWrap').classList.add('hidden');
     document.getElementById('avatarUploadDrop').classList.remove('hidden');
   }
-  document.getElementById('avatarEmojiSearch').value='';
+  document.getElementById('avatarEmojiSearch').value = '';
   buildEmojiGrid(); buildColorSwatches();
-  document.getElementById('avatarColorCustom').value=avatarNewColor;
+  document.getElementById('avatarColorCustom').value = avatarNewColor;
   updateProfilePreview();
   document.getElementById('profileModal').classList.remove('hidden');
 }
 
-function closeProfileModal(){
+function closeProfileModal() {
   document.getElementById('profileModal').classList.add('hidden');
-  if(avatarNewPhotoURL&&avatarNewPhotoURL!==currentProfile.avatar_url)URL.revokeObjectURL(avatarNewPhotoURL);
-  avatarNewFile=null; avatarNewPhotoURL=null;
+  if (avatarNewPhotoURL && avatarNewPhotoURL !== currentProfile.avatar_url) URL.revokeObjectURL(avatarNewPhotoURL);
+  avatarNewFile = null; avatarNewPhotoURL = null;
 }
 
-async function saveProfile(){
-  const name=document.getElementById('profileNameInput').value.trim();
-  const bio =document.getElementById('profileBioInput').value.trim();
-  const err =document.getElementById('profileError'); err.textContent='';
-  if(!name){err.textContent='表示名を入力してください';return;}
-  const btn=document.getElementById('saveProfileBtn');
-  btn.disabled=true; btn.textContent='保存中...';
+async function saveProfile() {
+  const name = document.getElementById('profileNameInput').value.trim();
+  const bio = document.getElementById('profileBioInput').value.trim();
+  const err = document.getElementById('profileError'); err.textContent = '';
+  if (!name) { err.textContent = '表示名を入力してください'; return; }
+  const btn = document.getElementById('saveProfileBtn');
+  btn.disabled = true; btn.textContent = '保存中...';
 
-  let avatar_url=currentProfile.avatar_url||'';
-  let avatar_icon=currentProfile.avatar_icon||'';
-  let color=currentProfile.color||'#1d9bf0';
+  let avatar_url = currentProfile.avatar_url || '';
+  let avatar_icon = currentProfile.avatar_icon || '';
+  let color = currentProfile.color || '#1d9bf0';
 
-  if(avatarMode==='photo'&&avatarNewFile){
-    const ext=avatarNewFile.name.split('.').pop().toLowerCase();
-    const path=`${currentUser.id}/avatar.${ext}`;
-    const {error:upErr}=await sb.storage.from('avatars').upload(path,avatarNewFile,{upsert:true});
-    if(upErr){err.textContent='アップロード失敗: '+upErr.message;btn.disabled=false;btn.textContent='保存する';return;}
-    const {data:ud}=sb.storage.from('avatars').getPublicUrl(path);
-    avatar_url=ud.publicUrl+'?t='+Date.now(); avatar_icon='';
-  } else if(avatarMode==='photo'&&!avatarNewFile&&!avatarNewPhotoURL){
-    avatar_url='';
-  } else if(avatarMode==='emoji'&&avatarNewEmoji){
-    avatar_icon=avatarNewEmoji; avatar_url='';
-  } else if(avatarMode==='color'){
-    color=avatarNewColor||color; avatar_url=''; avatar_icon='';
+  if (avatarMode === 'photo' && avatarNewFile) {
+    const ext = avatarNewFile.name.split('.').pop().toLowerCase();
+    const path = `${currentUser.id}/avatar.${ext}`;
+    const { error: upErr } = await sb.storage.from('avatars').upload(path, avatarNewFile, { upsert: true });
+    if (upErr) { err.textContent = 'アップロード失敗: ' + upErr.message; btn.disabled = false; btn.textContent = '保存する'; return; }
+    const { data: ud } = sb.storage.from('avatars').getPublicUrl(path);
+    avatar_url = ud.publicUrl + '?t=' + Date.now(); avatar_icon = '';
+  } else if (avatarMode === 'photo' && !avatarNewFile && !avatarNewPhotoURL) {
+    avatar_url = '';
+  } else if (avatarMode === 'emoji' && avatarNewEmoji) {
+    avatar_icon = avatarNewEmoji; avatar_url = '';
+  } else if (avatarMode === 'color') {
+    color = avatarNewColor || color; avatar_url = ''; avatar_icon = '';
   }
 
-  const {error}=await sb.from('profiles').update({name,bio,color,avatar_url,avatar_icon}).eq('id',currentUser.id);
-  btn.disabled=false; btn.textContent='保存する';
-  if(error){err.textContent='保存失敗: '+error.message;return;}
+  const { error } = await sb.from('profiles').update({ name, bio, color, avatar_url, avatar_icon }).eq('id', currentUser.id);
+  btn.disabled = false; btn.textContent = '保存する';
+  if (error) { err.textContent = '保存失敗: ' + error.message; return; }
 
-  currentProfile={...currentProfile,name,bio,color,avatar_url,avatar_icon};
-  const idx=allProfiles.findIndex(p=>p.id===currentProfile.id);
-  if(idx!==-1)allProfiles[idx]={...allProfiles[idx],name,bio,color,avatar_url,avatar_icon};
+  currentProfile = { ...currentProfile, name, bio, color, avatar_url, avatar_icon };
+  const idx = allProfiles.findIndex(p => p.id === currentProfile.id);
+  if (idx !== -1) allProfiles[idx] = { ...allProfiles[idx], name, bio, color, avatar_url, avatar_icon };
 
   renderSidebarProfile();
   showToast('プロフィールを保存しました ✅');
@@ -2180,8 +2247,10 @@ function setupRealtime() {
   if (currentProfile.role === 'sensei') {
     reqChannel = sb.channel('req-rt-' + currentProfile.id)
       .on('postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'requests',
-          filter: `sensei_id=eq.${currentProfile.id}` },
+        {
+          event: 'INSERT', schema: 'public', table: 'requests',
+          filter: `sensei_id=eq.${currentProfile.id}`
+        },
         payload => {
           if (payload.new) showReqPopup(payload.new);
         })
@@ -2273,18 +2342,18 @@ function autoResize(el) {
 function setText(id, val) { const el = document.getElementById(id); if (el) el.textContent = val; }
 function escHtml(s) {
   return String(s)
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 function timeAgo(ts) {
   const s = Math.floor((Date.now() - ts) / 1000);
-  if (s < 60)   return 'たった今';
+  if (s < 60) return 'たった今';
   const m = Math.floor(s / 60);
-  if (m < 60)   return `${m}分前`;
+  if (m < 60) return `${m}分前`;
   const h = Math.floor(m / 60);
-  if (h < 24)   return `${h}時間前`;
+  if (h < 24) return `${h}時間前`;
   const d = Math.floor(h / 24);
-  if (d < 7)    return `${d}日前`;
+  if (d < 7) return `${d}日前`;
   return new Date(ts).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' });
 }
 let _toastTimer = null;
@@ -2302,9 +2371,9 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 //  MOBILE DRAWER
 // ============================================================
 function setupMobileDrawer() {
-  const sidebar  = document.querySelector('.sidebar');
-  const overlay  = document.getElementById('sidebarOverlay');
-  const menuBtn  = document.getElementById('mobileMenuBtn');
+  const sidebar = document.querySelector('.sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  const menuBtn = document.getElementById('mobileMenuBtn');
 
   function openDrawer() {
     sidebar?.classList.add('open');
