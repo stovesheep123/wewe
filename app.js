@@ -153,6 +153,7 @@ async function initApp() {
   setupLogout();
   setupLightbox();
   setupProfileModal();
+  setupMobileDrawer();
 
   await loadAllProfiles();
 
@@ -2296,3 +2297,38 @@ function showToast(msg) {
   _toastTimer = setTimeout(() => el.classList.add('hidden'), 3200);
 }
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ============================================================
+//  MOBILE DRAWER
+// ============================================================
+function setupMobileDrawer() {
+  const sidebar  = document.querySelector('.sidebar');
+  const overlay  = document.getElementById('sidebarOverlay');
+  const menuBtn  = document.getElementById('mobileMenuBtn');
+
+  function openDrawer() {
+    sidebar?.classList.add('open');
+    overlay?.classList.add('visible');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeDrawer() {
+    sidebar?.classList.remove('open');
+    overlay?.classList.remove('visible');
+    document.body.style.overflow = '';
+  }
+
+  menuBtn?.addEventListener('click', openDrawer);
+  overlay?.addEventListener('click', closeDrawer);
+
+  // Close drawer when a nav button is tapped on mobile
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (window.innerWidth <= 640) closeDrawer();
+    });
+  });
+
+  // Close drawer when a conv item is tapped
+  document.getElementById('convList')?.addEventListener('click', () => {
+    if (window.innerWidth <= 640) closeDrawer();
+  });
+}
